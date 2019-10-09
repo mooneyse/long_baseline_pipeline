@@ -2170,14 +2170,14 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
     return rejigged_h5parm
 
 
-def main(mtf='mtf.txt', ms='', threshold=0.25, cores=4, directions=[]):
+def main(vis, mtf='mtf.txt', ms='', threshold=0.25, cores=4, directions=[]):
     """First, evaluate the h5parm phase solutions. Then for a given direction,
     make a new h5parm of acceptable solutions from the nearest direction for
     each station. Apply the solutions to the measurement set. Run loop 3 to
     image the measurement set in the given direction. Updates the master text
     file with the new best solutions after loop 3 is called.
     """
-
+    print('fFFFFFFFFFFFF', vis)
     # combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
     #                                  'loopy/SILTJ132737.15+550405.9_L693725_' +
     #                                  'phasecal.apply_tec_02_c0.h5',
