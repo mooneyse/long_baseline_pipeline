@@ -2170,7 +2170,7 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
     return rejigged_h5parm
 
 
-def main(mtf='mtf.txt', ms='', threshold=0.25, cores=4, directions=[]):
+def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     """First, evaluate the h5parm phase solutions. Then for a given direction,
     make a new h5parm of acceptable solutions from the nearest direction for
     each station. Apply the solutions to the measurement set. Run loop 3 to
