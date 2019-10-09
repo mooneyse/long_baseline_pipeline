@@ -2179,15 +2179,15 @@ def main(vis, mtf='mtf.txt', ms='', threshold=0.25, cores=4, directions=[]):
     """
     # vis is just a dummy variable at the moment
 
-    combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
-                                     'loopy/SILTJ132737.15+550405.9_L693725_' +
-                                     'phasecal.apply_tec_02_c0.h5',
-                                     amplitude_h5='/data020/scratch/sean/let' +
-                                     'sgetloopy/SILTJ132737.15+550405.9_L693' +
-                                     '725_phasecal.apply_tec_A_03_c0.h5',
-                                     tec_h5='/data020/scratch/sean/letsgetlo' +
-                                     'opy/SILTJ132737.15+550405.9_L693725_ph' +
-                                     'asecal.MS_tec.h5')
+    # combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
+    #                                  'loopy/SILTJ132737.15+550405.9_L693725_' +
+    #                                  'phasecal.apply_tec_02_c0.h5',
+    #                                  amplitude_h5='/data020/scratch/sean/let' +
+    #                                  'sgetloopy/SILTJ132737.15+550405.9_L693' +
+    #                                  '725_phasecal.apply_tec_A_03_c0.h5',
+    #                                  tec_h5='/data020/scratch/sean/letsgetlo' +
+    #                                  'opy/SILTJ132737.15+550405.9_L693725_ph' +
+    #                                  'asecal.MS_tec.h5')
     #
     # combined_133749_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
     #                                  'loopy/SILTJ133749.65+550102.6_L693725_' +
