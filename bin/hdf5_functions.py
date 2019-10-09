@@ -2170,13 +2170,77 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
     return rejigged_h5parm
 
 
-def main():
-    '''First, evaluate the h5parm phase solutions. Then for a given direction,
+def main(mtf='mtf.txt', ms='', threshold=0.25, cores=4, directions=[]):
+    """First, evaluate the h5parm phase solutions. Then for a given direction,
     make a new h5parm of acceptable solutions from the nearest direction for
     each station. Apply the solutions to the measurement set. Run loop 3 to
     image the measurement set in the given direction. Updates the master text
-    file with the new best solutions after loop 3 is called.'''
+    file with the new best solutions after loop 3 is called.
+    """
 
+    # combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
+    #                                  'loopy/SILTJ132737.15+550405.9_L693725_' +
+    #                                  'phasecal.apply_tec_02_c0.h5',
+    #                                  amplitude_h5='/data020/scratch/sean/let' +
+    #                                  'sgetloopy/SILTJ132737.15+550405.9_L693' +
+    #                                  '725_phasecal.apply_tec_A_03_c0.h5',
+    #                                  tec_h5='/data020/scratch/sean/letsgetlo' +
+    #                                  'opy/SILTJ132737.15+550405.9_L693725_ph' +
+    #                                  'asecal.MS_tec.h5')
+    #
+    # combined_133749_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
+    #                                  'loopy/SILTJ133749.65+550102.6_L693725_' +
+    #                                  'phasecal.apply_tec_00_c0.h5',
+    #                                  amplitude_h5='/data020/scratch/sean/let' +
+    #                                  'sgetloopy/SILTJ133749.65+550102.6_L693' +
+    #                                  '725_phasecal.apply_tec_A_04_c0.h5',
+    #                                  tec_h5='/data020/scratch/sean/letsgetlo' +
+    #                                  'opy/SILTJ133749.65+550102.6_L693725_ph' +
+    #                                  'asecal.MS_tec.h5')
+
+    make_blank_mtf(mtf=mtf)
+
+    # evaluate_solutions(h5parm=combined_132737_h5, mtf=mtf, threshold=threshold)
+    # evaluate_solutions(h5parm=combined_133749_h5, mtf=mtf, threshold=threshold)
+    #
+    # new_h5parms = dir2phasesol_wrapper(mtf=mtf,
+    #                                    ms=ms,
+    #                                    directions=directions,
+    #                                    cores=cores)
+    #
+    # msouts = []
+    # for new_h5parm in new_h5parms:
+    #     # outputs an ms per direction
+    #     msout = apply_h5parm(h5parm=new_h5parm,
+    #                          ms=ms,
+    #                          solutions=['phase', 'amplitude'])  # 'tec'
+    #     msout_tec = msout  # TODO need a skymodel in residual_tec_solve to test
+    #     # resid_tec_h5parm, msout_tec = residual_tec_solve(ms=msout)
+    #     # that is being built into loop 3
+    #     msouts.append(msout_tec)
+    #
+    # print('Running loop 3...')  # has to be run from the same directory as ms
+    # for msout in msouts:
+    #     cmd = ('python2 /data020/scratch/sean/letsgetloopy/lb-loop-2/' +
+    #            'loop3B_v1.py ' + msout)
+    #     os.system(cmd)
+    #
+    # print('Then run combine_h5s (which puts the final loop 3 solutions in ' +
+    #       'one HDF5) and update_list (which adds the incremental loop 3' +
+    #       'solutions to the intial solutions, gets the HDF5 solution sets in' +
+    #       ' a format suitable for DDF, and re-evaluates the end result).')
+
+    # for msout, initial_h5parm in zip(msouts, new_h5parms):
+    #     loop3_dir = (os.path.dirname(os.path.dirname(msout + '/')) +
+    #                  '/loop3_' + os.path.basename(msout)[:-3])
+    #     loop3_h5s = combine_h5s(loop3_dir=loop3_dir)
+    #     update_list(initial_h5parm=initial_h5parm,
+    #                 incremental_h5parm=loop3_h5s,
+    #                 mtf=mtf,
+    #                 threshold=threshold)
+
+
+if __name__ == '__main__':
     formatter_class = argparse.RawDescriptionHelpFormatter
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=formatter_class)
@@ -2225,67 +2289,5 @@ def main():
     cores = args.cores
     directions = args.directions
 
-    combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
-                                     'loopy/SILTJ132737.15+550405.9_L693725_' +
-                                     'phasecal.apply_tec_02_c0.h5',
-                                     amplitude_h5='/data020/scratch/sean/let' +
-                                     'sgetloopy/SILTJ132737.15+550405.9_L693' +
-                                     '725_phasecal.apply_tec_A_03_c0.h5',
-                                     tec_h5='/data020/scratch/sean/letsgetlo' +
-                                     'opy/SILTJ132737.15+550405.9_L693725_ph' +
-                                     'asecal.MS_tec.h5')
-
-    combined_133749_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
-                                     'loopy/SILTJ133749.65+550102.6_L693725_' +
-                                     'phasecal.apply_tec_00_c0.h5',
-                                     amplitude_h5='/data020/scratch/sean/let' +
-                                     'sgetloopy/SILTJ133749.65+550102.6_L693' +
-                                     '725_phasecal.apply_tec_A_04_c0.h5',
-                                     tec_h5='/data020/scratch/sean/letsgetlo' +
-                                     'opy/SILTJ133749.65+550102.6_L693725_ph' +
-                                     'asecal.MS_tec.h5')
-
-    make_blank_mtf(mtf=mtf)
-
-    # evaluate_solutions(h5parm=combined_132737_h5, mtf=mtf, threshold=threshold)
-    # evaluate_solutions(h5parm=combined_133749_h5, mtf=mtf, threshold=threshold)
-    #
-    # new_h5parms = dir2phasesol_wrapper(mtf=mtf,
-    #                                    ms=ms,
-    #                                    directions=directions,
-    #                                    cores=cores)
-    #
-    # msouts = []
-    # for new_h5parm in new_h5parms:
-    #     # outputs an ms per direction
-    #     msout = apply_h5parm(h5parm=new_h5parm,
-    #                          ms=ms,
-    #                          solutions=['phase', 'amplitude'])  # 'tec'
-    #     msout_tec = msout  # TODO need a skymodel in residual_tec_solve to test
-    #     # resid_tec_h5parm, msout_tec = residual_tec_solve(ms=msout)
-    #     # that is being built into loop 3
-    #     msouts.append(msout_tec)
-    #
-    # print('Running loop 3...')  # has to be run from the same directory as ms
-    # for msout in msouts:
-    #     cmd = ('python2 /data020/scratch/sean/letsgetloopy/lb-loop-2/' +
-    #            'loop3B_v1.py ' + msout)
-    #     os.system(cmd)
-    #
-    # print('Then run combine_h5s (which puts the final loop 3 solutions in ' +
-    #       'one HDF5) and update_list (which adds the incremental loop 3' +
-    #       'solutions to the intial solutions, gets the HDF5 solution sets in' +
-    #       ' a format suitable for DDF, and re-evaluates the end result).')
-
-    # for msout, initial_h5parm in zip(msouts, new_h5parms):
-    #     loop3_dir = (os.path.dirname(os.path.dirname(msout + '/')) +
-    #                  '/loop3_' + os.path.basename(msout)[:-3])
-    #     loop3_h5s = combine_h5s(loop3_dir=loop3_dir)
-    #     update_list(initial_h5parm=initial_h5parm,
-    #                 incremental_h5parm=loop3_h5s,
-    #                 mtf=mtf,
-    #                 threshold=threshold)
-
-
-if __name__ == '__main__':
-    main()
+    main(mtf=mtf, ms=ms, threshold=threshold, cores=cores,
+         directions=directions)
