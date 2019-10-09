@@ -1,4 +1,4 @@
-! long_baseline_pipeline_dir = /data5/sean/LC12_022/software/long_baseline_pipeline
+! long_baseline_pipeline_dir = /data5/sean/LC12_022/software/my_long_baseline_pipeline/long_baseline_pipeline
 ! prefactor_dir              = /data5/sean/LC12_022/software/prefactor
 ! losoto_directory           = /data5/sean/LC12_022/software/losoto
 ! aoflagger                  = /opt/lofar/aoflagger/bin/aoflagger
