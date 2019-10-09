@@ -2177,8 +2177,7 @@ def main(vis, mtf='mtf.txt', ms='', threshold=0.25, cores=4, directions=[]):
     image the measurement set in the given direction. Updates the master text
     file with the new best solutions after loop 3 is called.
     """
-    for i, v in enumerate(vis):
-        print(i, v)
+    print(vis)
     # combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
     #                                  'loopy/SILTJ132737.15+550405.9_L693725_' +
     #                                  'phasecal.apply_tec_02_c0.h5',
