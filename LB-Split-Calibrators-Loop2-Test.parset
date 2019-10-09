@@ -158,10 +158,10 @@ cal_loop3.argument.bandwidth	 = '8MHz'
 #loop2.argument.cores       = 4
 #loop2.argument.directions  = []
 
-loop2.control.type       = pythonplugin
-loop2.control.executable = {{ scripts }}/hdf5_functions_test.py
-loop2.argument.flags     = [targetdata_map_list.output.mapfile]
-loop2.argument.optional  = 6      # some more arguments
+#loop2.control.type       = pythonplugin
+#loop2.control.executable = {{ scripts }}/hdf5_functions_test.py
+#loop2.argument.flags     = [targetdata_map_list.output.mapfile]
+#loop2.argument.optional  = 6      # some more arguments
 
 # run loop3
 loop2.control.type		   	 = pythonplugin
