@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-def main(positional, optional=0, passthrough=0):
+def main(positional, optional=0):
         outdict = {}
         print 'File name: ', str(positional)
 
