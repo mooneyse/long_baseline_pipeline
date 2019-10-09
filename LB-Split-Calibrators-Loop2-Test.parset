@@ -166,7 +166,7 @@ cal_loop3.argument.bandwidth	 = '8MHz'
 # run loop3
 loop2.control.type		   	 = pythonplugin
 loop2.control.max_per_node = {{ num_proc_per_node }}
-loop2.control.executable	 = {{ scripts }}/loop3B_v1.py
+loop2.control.executable	 = {{ scripts }}/hdf5_functions_test.py
 loop2.argument.flags		   = [targetdata_map_list.output.mapfile]
 loop2.argument.strategy		 = 'P30,P30,P30,A500,A450,A400'
 loop2.argument.startmod		 =
