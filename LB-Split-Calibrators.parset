@@ -29,9 +29,9 @@
 ! rfistrategy			           = HBAdefault
 ! max_length                 = 60  # amount of subbands to concatenate for full-bandwidth flagging (for calibrator you can take all SBs, for target stick to about 148)
 
-pipeline.steps         = [setup, selfcal]
+pipeline.steps         = [loop2]  # setup, selfcal]
 pipeline.steps.setup   = [targetdata_map, targetdata_map_list, parallel_split, caldata_map, cal_model, h5parm_map, sourcedb_map]
-pipeline.steps.selfcal = [tecsolve, plot_tec, apply_tec, cal_loop3]  # loop2
+pipeline.steps.selfcal = [tecsolve, plot_tec, apply_tec, cal_loop3, loop2]
 
 # generate a mapfile of the delay-calibrated subbands
 targetdata_map.control.kind        = plugin
