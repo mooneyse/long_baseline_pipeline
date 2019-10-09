@@ -2170,14 +2170,15 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
     return rejigged_h5parm
 
 
-def main(vis, mtf='mtf.txt', ms='', threshold=0.25, cores=4, directions=[]):
+def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     """First, evaluate the h5parm phase solutions. Then for a given direction,
     make a new h5parm of acceptable solutions from the nearest direction for
     each station. Apply the solutions to the measurement set. Run loop 3 to
     image the measurement set in the given direction. Updates the master text
     file with the new best solutions after loop 3 is called.
     """
-    # vis is just a dummy variable at the moment
+    # NOTE get loop 3 solutions in a few directions. then i can use the apply_tec mapfile.
+    # and from the vis i can build the phase, amplitude and tec h5s
 
     # combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
     #                                  'loopy/SILTJ132737.15+550405.9_L693725_' +
@@ -2246,21 +2247,20 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=formatter_class)
 
-    parser.add_argument('-m',
-                        '--mtf',
-                        required=False,
-                        type=str,
-                        default='/data020/scratch/sean/letsgetloopy/mtf.txt',
-                        help='master text file')
-
-    parser.add_argument('-f',
-                        '--ms',
+    parser.add_argument('ms',
                         required=False,
                         type=str,
                         default=('/data020/scratch/sean/letsgetloopy/SILTJ13' +
                                  '5044.06+544752.7_L693725_phasecal.' +
                                  'apply_tec'),
                         help='measurement set')
+
+    parser.add_argument('-m',
+                        '--mtf',
+                        required=False,
+                        type=str,
+                        default='/data020/scratch/sean/letsgetloopy/mtf.txt',
+                        help='master text file')
 
     parser.add_argument('-t',
                         '--threshold',
@@ -2281,14 +2281,13 @@ if __name__ == '__main__':
                         type=float,
                         default=[],
                         nargs='+',
-                        help='source positions (radians; RA DEC RA DEC...)')
+                        help='source positions (radians; RA Dec RA Dec...)')
 
     args = parser.parse_args()
-    mtf = args.mtf
     ms = args.ms
+    mtf = args.mtf
     threshold = args.threshold
     cores = args.cores
     directions = args.directions
 
-    main(mtf=mtf, ms=ms, threshold=threshold, cores=cores,
-         directions=directions)
+    main(ms, mtf=mtf, threshold=threshold, cores=cores, directions=directions)
