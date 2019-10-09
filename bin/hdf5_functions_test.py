@@ -2177,7 +2177,6 @@ def main(vis, mtf='mtf.txt', ms='', threshold=0.25, cores=4, directions=[]):
     image the measurement set in the given direction. Updates the master text
     file with the new best solutions after loop 3 is called.
     """
-    print('fFFFFFFFFFFFF', vis)
     # combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
     #                                  'loopy/SILTJ132737.15+550405.9_L693725_' +
     #                                  'phasecal.apply_tec_02_c0.h5',
@@ -2199,7 +2198,7 @@ def main(vis, mtf='mtf.txt', ms='', threshold=0.25, cores=4, directions=[]):
     #                                  'asecal.MS_tec.h5')
 
     make_blank_mtf(mtf=mtf)
-    return 0
+    #return 0
     # evaluate_solutions(h5parm=combined_132737_h5, mtf=mtf, threshold=threshold)
     # evaluate_solutions(h5parm=combined_133749_h5, mtf=mtf, threshold=threshold)
     #
