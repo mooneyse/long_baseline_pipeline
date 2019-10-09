@@ -1,9 +1,9 @@
-! long_baseline_pipeline_dir = /home/morabito/software/long_baseline_pipeline_new
-! prefactor_dir              = /home/morabito/software/prefactorV3
-! losoto_directory           = /home/morabito/software/losotoV2
-! aoflagger                  = /soft/aoflagger-new/aoflagger/bin/aoflagger
+! long_baseline_pipeline_dir = /data5/sean/LC12_022/software/long_baseline_pipeline
+! prefactor_dir              = /data5/sean/LC12_022/software/prefactor
+! losoto_directory           = /data5/sean/LC12_022/software/losoto
+! aoflagger                  = /opt/lofar/aoflagger/bin/aoflagger
 ! lofar_directory            = $LOFARROOT
-! data_col                   = DATA  # set to CORRECTED_DATA to use DDF solutions
+! data_col                   = DATA
 ! image_cat                  = {{ job_directory }}/../LB-Delay-Calibration/lotss_catalogue.csv
 ! delay_cat                  = {{ job_directory }}/../LB-Delay-Calibration/delay_calibrators.csv
 ! subtract_cat               = {{ job_directory }}/../LB-Delay-Calibration/subtract_sources.csv
