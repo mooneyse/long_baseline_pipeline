@@ -1,21 +1,20 @@
 ! long_baseline_pipeline_dir = /data5/sean/LC12_022/software/my_long_baseline_pipeline/long_baseline_pipeline
 ! job_directory              = input.output.job_directory
 ! num_proc_per_node          = input.output.max_per_node
-! lb_delaycal_directory      = {{ job_directory }}/../LB-Delay-Calibration/
 ! scripts			 	             = {{ long_baseline_pipeline_dir }}/bin
 
 pipeline.steps         = [setup, selfcal]
 pipeline.steps.setup   = [targetdata_map, targetdata_map_list]
 pipeline.steps.selfcal = [loop2]
 
-# generate a mapfile of the delay-calibrated subbands
+# generate a mapfile of the loop 3 outputted ms
 targetdata_map.control.kind        = plugin
 targetdata_map.control.type        = createMapfile
 targetdata_map.control.method      = mapfile_from_folder
 targetdata_map.control.mapfile_dir = input.output.mapfile_dir
 targetdata_map.control.filename    = targetdata_map.mapfile
-targetdata_map.control.folder      = {{ lb_delaycal_directory }}
-targetdata_map.control.pattern     = L*msdpppconcat
+targetdata_map.control.folder      = {{ job_directory }}
+targetdata_map.control.pattern     = *_phasecal.apply_tec
 
 # convert to a mapfile with all subbands in one list
 targetdata_map_list.control.kind        = plugin

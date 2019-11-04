@@ -11,6 +11,7 @@ import argparse
 import csv
 import datetime
 import fnmatch
+import glob
 import os
 import subprocess
 import uuid
@@ -2170,7 +2171,7 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
     return rejigged_h5parm
 
 
-def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
+def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     """First, evaluate the h5parm phase solutions. Then for a given direction,
     make a new h5parm of acceptable solutions from the nearest direction for
     each station. Apply the solutions to the measurement set. Run loop 3 to
@@ -2179,6 +2180,19 @@ def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     """
     # NOTE get loop 3 solutions in a few directions. then i can use the apply_tec mapfile.
     # and from the vis i can build the phase, amplitude and tec h5s
+
+    make_blank_mtf(mtf=mtf)
+    for ms in ms_list:
+        suffix = '.apply_tec'
+        phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
+        amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
+        tec_h5 = ms.replace(suffix, '.MS_tec.h5')
+
+        print('my ms:', ms)
+        print('my phase:', phase_h5)
+        print('my amp:', amplitude_h5)
+        print('my tec:', tec_h5)
+        print('--------------------------------------------------------------')
 
     # combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
     #                                  'loopy/SILTJ132737.15+550405.9_L693725_' +
@@ -2199,9 +2213,7 @@ def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     #                                  tec_h5='/data020/scratch/sean/letsgetlo' +
     #                                  'opy/SILTJ133749.65+550102.6_L693725_ph' +
     #                                  'asecal.MS_tec.h5')
-
-    make_blank_mtf(mtf=mtf)
-    print('asdfasdfasdfasdf',ms)
+    #
     # evaluate_solutions(h5parm=combined_132737_h5, mtf=mtf, threshold=threshold)
     # evaluate_solutions(h5parm=combined_133749_h5, mtf=mtf, threshold=threshold)
     #
@@ -2231,7 +2243,7 @@ def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     #       'one HDF5) and update_list (which adds the incremental loop 3' +
     #       'solutions to the intial solutions, gets the HDF5 solution sets in' +
     #       ' a format suitable for DDF, and re-evaluates the end result).')
-
+    #
     # for msout, initial_h5parm in zip(msouts, new_h5parms):
     #     loop3_dir = (os.path.dirname(os.path.dirname(msout + '/')) +
     #                  '/loop3_' + os.path.basename(msout)[:-3])
