@@ -2184,9 +2184,9 @@ def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     make_blank_mtf(mtf=mtf)
     # for ms in ms_list:
     suffix = '.apply_tec'
-    print('asdfasdfasdf', ms)
+    print('asdfasdfasdf', type(ms), ms)
     for i in ms:
-        print(ms,'pppppppppppppp')
+        print(ms,'pppppppppppppp', type(i))
         for jj in i:
             print('when does it end',jj)
     # phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
