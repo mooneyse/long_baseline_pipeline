@@ -1142,8 +1142,9 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase']):
             f.write('apply_tec.solset                    = sol002\n')
             f.write('apply_tec.correction                = tec000\n')
 
-    subprocess.check_output(['NDPPP', parset])
-    os.remove(parset)
+    print('NDPPP', parset)
+    # subprocess.check_output(['NDPPP', parset])
+    # os.remove(parset)
 
     return msout
 
@@ -2235,17 +2236,17 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
         print('Direction {}: {}'.format(coords_str, new_h5parm))
         # TODO plot the h5parms with losoto
 
-    # msouts = []
-    # for new_h5parm in new_h5parms:
-    #     # outputs an ms per direction
-    #     msout = apply_h5parm(h5parm=new_h5parm,
-    #                          ms=ms,
-    #                          solutions=['phase', 'amplitude'])  # 'tec'
-    #     msout_tec = msout  # TODO need a skymodel in residual_tec_solve to test
-    #     # resid_tec_h5parm, msout_tec = residual_tec_solve(ms=msout)
-    #     # that is being built into loop 3
-    #     msouts.append(msout_tec)
-
+    msouts = []
+    for new_h5parm in new_h5parms:
+        # outputs an ms per direction
+        msout = apply_h5parm(h5parm=new_h5parm,
+                             ms=ms,
+                             solutions=['phase', 'amplitude'])  # 'tec'
+        msout_tec = msout  # TODO need a skymodel in residual_tec_solve to test
+        # resid_tec_h5parm, msout_tec = residual_tec_solve(ms=msout)
+        # that is being built into loop 3
+        msouts.append(msout_tec)
+    print(msouts)
     # print('Running loop 3...')  # has to be run from the same directory as ms
     # for msout in msouts:
     #     cmd = ('python2 /data020/scratch/sean/letsgetloopy/lb-loop-2/' +
