@@ -211,7 +211,7 @@ def combine_h5s(phase_h5='', amplitude_h5='', tec_h5='', loop3_dir=''):
     p.close()
     a.close()
     n.close()
-
+    print('Created', new_h5)
     return new_h5
 
 
@@ -2187,7 +2187,7 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     suffix = '.apply_tec'
     sources = []
     for ms in ms_list:
-        sources.append(ms.split('/')[-1][:-10])
+        sources.append(ms.split('/')[-1][:-19])
 
     print('Found', len(ms_list), 'sources:', ', '.join(sources))
 
@@ -2202,17 +2202,10 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
         print('Amplitude h5parm:', amplitude_h5)
         print('TEC h5parm:', tec_h5, '\n')
 
+        combined_h5 = combine_h5s(phase_h5=phase_h5,
+                                  amplitude_h5=amplitude_h5,
+                                  tec_h5=tec_h5)
 
-    # combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
-    #                                  'loopy/SILTJ132737.15+550405.9_L693725_' +
-    #                                  'phasecal.apply_tec_02_c0.h5',
-    #                                  amplitude_h5='/data020/scratch/sean/let' +
-    #                                  'sgetloopy/SILTJ132737.15+550405.9_L693' +
-    #                                  '725_phasecal.apply_tec_A_03_c0.h5',
-    #                                  tec_h5='/data020/scratch/sean/letsgetlo' +
-    #                                  'opy/SILTJ132737.15+550405.9_L693725_ph' +
-    #                                  'asecal.MS_tec.h5')
-    #
     # combined_133749_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
     #                                  'loopy/SILTJ133749.65+550102.6_L693725_' +
     #                                  'phasecal.apply_tec_00_c0.h5',
