@@ -2201,7 +2201,7 @@ def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     #                                  'asecal.MS_tec.h5')
 
     make_blank_mtf(mtf=mtf)
-
+    print(ms)
     # evaluate_solutions(h5parm=combined_132737_h5, mtf=mtf, threshold=threshold)
     # evaluate_solutions(h5parm=combined_133749_h5, mtf=mtf, threshold=threshold)
     #
