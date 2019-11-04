@@ -2197,28 +2197,17 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
         tec_h5 = ms.replace(suffix, '.MS_tec.h5')
 
         print('Source {}/{}:'.format(i + 1, len(ms_list)), source)
-        print('\t- MS:', ms)
-        print('\t- Phase h5parm:', phase_h5)
-        print('\t- Amplitude h5parm:', amplitude_h5)
-        print('\t- TEC h5parm:', tec_h5, '\n')
+        print(source, 'MS:', ms)
+        print(source, 'phase h5parm:', phase_h5)
+        print(source, 'amplitude h5parm:', amplitude_h5)
+        print(source, 'TEC h5parm:', tec_h5, '\n')
 
         combined_h5 = combine_h5s(phase_h5=phase_h5,
                                   amplitude_h5=amplitude_h5,
                                   tec_h5=tec_h5)
 
         evaluate_solutions(h5parm=combined_h5, mtf=mtf, threshold=threshold)
-    # combined_133749_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
-    #                                  'loopy/SILTJ133749.65+550102.6_L693725_' +
-    #                                  'phasecal.apply_tec_00_c0.h5',
-    #                                  amplitude_h5='/data020/scratch/sean/let' +
-    #                                  'sgetloopy/SILTJ133749.65+550102.6_L693' +
-    #                                  '725_phasecal.apply_tec_A_04_c0.h5',
-    #                                  tec_h5='/data020/scratch/sean/letsgetlo' +
-    #                                  'opy/SILTJ133749.65+550102.6_L693725_ph' +
-    #                                  'asecal.MS_tec.h5')
-    #
-    # evaluate_solutions(h5parm=combined_133749_h5, mtf=mtf, threshold=threshold)
-    #
+
     # new_h5parms = dir2phasesol_wrapper(mtf=mtf,
     #                                    ms=ms,
     #                                    directions=directions,
