@@ -2185,6 +2185,12 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     make_blank_mtf(mtf=mtf)
     ms_list = ast.literal_eval(ms_list)
     suffix = '.apply_tec'
+    sources = []
+    for ms in ms_list:
+        sources.append(ms.split('/')[-1][:-10])
+
+    print(f'Found {len(ms_list)} sources: {sources}')
+
     for ms in ms_list:
         phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
         amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
