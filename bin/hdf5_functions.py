@@ -35,6 +35,9 @@ __date__ = '01 June 2019'
 # TODO https://github.com/mooneyse/lb-loop-2/issues/9
 # TODO https://github.com/mooneyse/lb-loop-2/issues/6
 # TODO https://github.com/mooneyse/lb-loop-2/issues/5
+# TODO add a function to output something like this:
+#      https://i.imgur.com/G0BZktL.png
+# TODO possibly change the directions to be read in as a dictionary
 
 
 def dir_from_ms(ms, verbose=False):
@@ -2184,9 +2187,16 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
 
     ms_list = ast.literal_eval(ms_list)
     cores = int(cores)
+    _ = []
     if type(directions) is str:
-        directions = directions.split()  # split at spaces
-        directions = [float(x) for x in directions]  # convert to float
+        directions = ast.literal_eval(directions)
+        if 'unit' in directions.keys():
+            if directions['unit'][:3].lower() != 'rad':
+                raise NotImplementedError('Directions must be in radians.')
+        for r, d in zip(directions['ra'], directions['dec']):
+            _.append(r)
+            _.append(d)
+    directions = _
 
     make_blank_mtf(mtf=mtf)
     suffix = '.apply_tec'
@@ -2219,7 +2229,7 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
                                        ms=ms,
                                        directions=directions,
                                        cores=cores)
-    
+
     # msouts = []
     # for new_h5parm in new_h5parms:
     #     # outputs an ms per direction

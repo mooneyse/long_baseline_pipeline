@@ -32,4 +32,4 @@ loop2.argument.flags		   = [targetdata_map_list.output.mapfile]
 loop2.argument.mtf		     = {{ job_directory }}/mtf.txt
 loop2.argument.threshold   = 0.25
 loop2.argument.cores       = {{ num_proc_per_node }}
-loop2.argument.directions  = 2.2990230802183 0.371696758137 2.3536889216923 0.311595683865 2.366479471122 0.3764541958107  # 3 directions in my field
+loop2.argument.directions  = {'ra':[2.3283323088258, 2.3382742452972], 'dec':[0.3510090580993, 0.3434992309592], 'unit': 'radian'}
