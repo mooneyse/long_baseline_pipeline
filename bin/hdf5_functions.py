@@ -2189,7 +2189,7 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     for ms in ms_list:
         sources.append(ms.split('/')[-1][:-10])
 
-    print(f'Found {len(ms_list)} sources: {sources}')
+    print('Found', len(ms_list), 'sources:', sources)
 
     for ms in ms_list:
         phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
