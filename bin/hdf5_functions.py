@@ -2172,7 +2172,7 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
     return rejigged_h5parm
 
 
-def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
+def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     """First, evaluate the h5parm phase solutions. Then for a given direction,
     make a new h5parm of acceptable solutions from the nearest direction for
     each station. Apply the solutions to the measurement set. Run loop 3 to
@@ -2183,23 +2183,17 @@ def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     # and from the vis i can build the phase, amplitude and tec h5s
 
     make_blank_mtf(mtf=mtf)
-    # for ms in ms_list:
+    ms_list = ast.literal_eval(ms_list)
     suffix = '.apply_tec'
-    ms = ast.literal_eval(ms)
+    for ms in ms_list:
+        phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
+        amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
+        tec_h5 = ms.replace(suffix, '.MS_tec.h5')
 
-    print('asdfasdfasdf', type(ms), ms)
-    for i in ms:
-        print(ms,'pppppppppppppp', type(i))
-        # for jj in i:
-        #     print('when does it end',jj)
-    # phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
-    # amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
-    # tec_h5 = ms.replace(suffix, '.MS_tec.h5')
-    #
-    # print('my ms:', ms)
-    # print('my phase:', phase_h5)
-    # print('my amp:', amplitude_h5)
-    # print('my tec:', tec_h5)
+        print('my ms:', ms)
+        print('my phase:', phase_h5)
+        print('my amp:', amplitude_h5)
+        print('my tec:', tec_h5)
     print('--------------------------------------------------------------')
 
     # combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
