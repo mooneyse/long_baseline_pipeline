@@ -2256,6 +2256,8 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
         # resid_tec_h5parm, msout_tec = residual_tec_solve(ms=msout)
         # that is being built into loop 3
         msouts.append(msout_tec)
+        # should the ms include shifting and averaging? are the solutions
+        # applied to these data or the LB-Delay-Calibrator.parset output?
 
     print('Made {} new measurement sets:'.format(len(msouts)))
     for i, msout in enumerate(msouts):
