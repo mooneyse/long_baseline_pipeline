@@ -2182,8 +2182,13 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     # NOTE get loop 3 solutions in a few directions. then i can use the apply_tec mapfile.
     # and from the vis i can build the phase, amplitude and tec h5s
 
-    make_blank_mtf(mtf=mtf)
     ms_list = ast.literal_eval(ms_list)
+    cores = int(cores)
+    if type(directions) is str:
+        directions = directions.split()  # split at spaces
+        directions = [float(x) for x in directions]  # convert to float
+
+    make_blank_mtf(mtf=mtf)
     suffix = '.apply_tec'
     sources = []
     for ms in ms_list:
@@ -2208,15 +2213,13 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
 
         evaluate_solutions(h5parm=combined_h5, mtf=mtf, threshold=threshold)
 
-        print('asdfasdfasdfasdfasdf')
-        print('dir', type(directions), directions)
-        print('cores', type(cores), cores)
+    print('asdfasdfasdfasdfasdf')
 
-    # new_h5parms = dir2phasesol_wrapper(mtf=mtf,
-    #                                    ms=ms,
-    #                                    directions=directions,
-    #                                    cores=cores)
-    #
+    new_h5parms = dir2phasesol_wrapper(mtf=mtf,
+                                       ms=ms,
+                                       directions=directions,
+                                       cores=cores)
+    
     # msouts = []
     # for new_h5parm in new_h5parms:
     #     # outputs an ms per direction
@@ -2227,18 +2230,18 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     #     # resid_tec_h5parm, msout_tec = residual_tec_solve(ms=msout)
     #     # that is being built into loop 3
     #     msouts.append(msout_tec)
-    #
+
     # print('Running loop 3...')  # has to be run from the same directory as ms
     # for msout in msouts:
     #     cmd = ('python2 /data020/scratch/sean/letsgetloopy/lb-loop-2/' +
     #            'loop3B_v1.py ' + msout)
     #     os.system(cmd)
-    #
+
     # print('Then run combine_h5s (which puts the final loop 3 solutions in ' +
     #       'one HDF5) and update_list (which adds the incremental loop 3' +
     #       'solutions to the intial solutions, gets the HDF5 solution sets in' +
     #       ' a format suitable for DDF, and re-evaluates the end result).')
-    #
+
     # for msout, initial_h5parm in zip(msouts, new_h5parms):
     #     loop3_dir = (os.path.dirname(os.path.dirname(msout + '/')) +
     #                  '/loop3_' + os.path.basename(msout)[:-3])
