@@ -2229,7 +2229,7 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
                                        ms=ms,
                                        directions=directions,
                                        cores=cores)
-
+    print(new_h5parms)
     # msouts = []
     # for new_h5parm in new_h5parms:
     #     # outputs an ms per direction
