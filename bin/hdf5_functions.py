@@ -1074,7 +1074,7 @@ def residual_tec_solve(ms, column_out='DATA', solint=5):
     return msout, h5parm
 
 
-def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase']):
+def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False):
     """Creates an NDPPP parset. Applies the output of make_h5parm to the
     measurement set.
 
@@ -1111,19 +1111,23 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase']):
         f.write('msout.datacolumn                    = {}\n\n'.format(col_out))
 
         if 'amplitude' in solutions and 'tec' in solutions:
-            print('Applying phase, amplitude, and TEC solutions.')
+            print('Applying phase, amplitude, and TEC solutions in'
+                  ' %s to %s' % (h5parm, ms))
             f.write('steps                               = [apply_phase, '
                     'apply_diagonal, apply_tec]\n\n')
         elif 'amplitude' not in solutions and 'tec' in solutions:
-            print('Applying phase and TEC solutions.')
+            print('Applying phase and TEC solutions in'
+                  ' %s to %s' % (h5parm, ms))
             f.write('steps                               = [apply_phase,'
                     'apply_tec]\n\n')
         elif 'amplitude' in solutions and 'tec' not in solutions:
-            print('Applying phase and amplitude solutions.')
+            print('Applying phase and amplitude solutions in'
+                  ' %s to %s' % (h5parm, ms))
             f.write('steps                               = [apply_phase, '
                     'apply_diagonal]\n\n')
         else:
-            print('Applying phase solutions.')
+            print('Applying phase solutions in'
+                  ' %s to %s' % (h5parm, ms))
             f.write('steps                               = [apply_phase]\n\n')
 
         f.write('apply_phase.type                    = applycal\n')
@@ -1148,7 +1152,9 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase']):
 
     print('NDPPP', parset)
     # subprocess.check_output(['NDPPP', parset])
-    # os.remove(parset)
+    if tidy:
+        print('Deleting the parset.')
+        os.remove(parset)
 
     return msout
 
@@ -2253,7 +2259,7 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
 
     print('Made {} new measurement sets:'.format(len(msouts)))
     for i, msout in enumerate(msouts):
-        print('{}/{}: {}'.format(i, len(msouts), msout))
+        print('{}/{}: {}'.format(i + 1, len(msouts), msout))
 
     # print('Running loop 3...')  # has to be run from the same directory as ms
     # for msout in msouts:
