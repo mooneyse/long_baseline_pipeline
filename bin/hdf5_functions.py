@@ -2192,6 +2192,7 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
         directions = ast.literal_eval(directions)
         if 'unit' in directions.keys():
             if directions['unit'][:3].lower() != 'rad':
+                # TODO convert coordinates here if they are given as degrees
                 raise NotImplementedError('Directions must be in radians.')
         for r, d in zip(directions['ra'], directions['dec']):
             _.append(r)
@@ -2223,8 +2224,6 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
 
         evaluate_solutions(h5parm=combined_h5, mtf=mtf, threshold=threshold)
 
-    print('asdfasdfasdfasdfasdf')
-
     new_h5parms = dir2phasesol_wrapper(mtf=mtf,
                                        ms=ms,
                                        directions=directions,
@@ -2234,6 +2233,7 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     for new_h5parm in new_h5parms:
         coords_str = ', '.join(new_h5parm.split('/')[-1][:-3].split('_')[-2:])
         print('Direction {}: {}'.format(coords_str, new_h5parm))
+        # TODO plot the h5parms with losoto
 
     # msouts = []
     # for new_h5parm in new_h5parms:
