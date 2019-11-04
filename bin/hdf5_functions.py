@@ -2229,7 +2229,12 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
                                        ms=ms,
                                        directions=directions,
                                        cores=cores)
-    print(new_h5parms)
+
+    print('Built {} h5parms:'.format(len(new_h5parms)))
+    for new_h5parm in new_h5parms:
+        coords_str = ', '.join(new_h5parm.split('/')[-1][:-3].split('_')[-2:])
+        print('Direction {}: {}'.format(coords_str, new_h5parm))
+
     # msouts = []
     # for new_h5parm in new_h5parms:
     #     # outputs an ms per direction
