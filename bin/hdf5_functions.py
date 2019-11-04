@@ -211,7 +211,7 @@ def combine_h5s(phase_h5='', amplitude_h5='', tec_h5='', loop3_dir=''):
     p.close()
     a.close()
     n.close()
-    print('\t- Created', new_h5)
+    print('Created', new_h5)
     return new_h5
 
 
@@ -310,7 +310,7 @@ def evaluate_solutions(h5parm, mtf, threshold=0.25, verbose=False):
     Returns:
     The coherence metric for each station. (dict)
     """
-    print('\t- Evalulating phase solutions in', h5parm)
+    print('Evalulating phase solutions in', h5parm)
     h = lh5.h5parm(h5parm)
     solname = h.getSolsetNames()[0]  # set to -1 to use only the last solset
     solset = h.getSolset(solname)
@@ -2191,12 +2191,12 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
 
     print('Found', len(ms_list), 'sources:', ', '.join(sources))
 
-    for ms, source in zip(ms_list, sources):
+    for i, (ms, source) in enumerate(zip(ms_list, sources)):
         phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
         amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
         tec_h5 = ms.replace(suffix, '.MS_tec.h5')
 
-        print(source, '------------------------------------------------------')
+        print('Source {}/{}:'.format(i + 1, len(ms_list)), source)
         print('\t- MS:', ms)
         print('\t- Phase h5parm:', phase_h5)
         print('\t- Amplitude h5parm:', amplitude_h5)
