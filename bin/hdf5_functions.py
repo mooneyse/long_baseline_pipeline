@@ -2184,13 +2184,14 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     make_blank_mtf(mtf=mtf)
     for ms in ms_list:
         suffix = '.apply_tec'
-        phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
-        amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
+
+        phase_h5 = ms.replace(suffix, '.apply_tec_0*_c0.h5')#glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
+        # amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
         tec_h5 = ms.replace(suffix, '.MS_tec.h5')
 
         print('my ms:', ms)
         print('my phase:', phase_h5)
-        print('my amp:', amplitude_h5)
+        # print('my amp:', amplitude_h5)
         print('my tec:', tec_h5)
         print('--------------------------------------------------------------')
 
