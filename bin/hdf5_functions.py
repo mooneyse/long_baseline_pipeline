@@ -211,7 +211,7 @@ def combine_h5s(phase_h5='', amplitude_h5='', tec_h5='', loop3_dir=''):
     p.close()
     a.close()
     n.close()
-    print('Created', new_h5)
+    print('\t- Created', new_h5)
     return new_h5
 
 
@@ -310,7 +310,7 @@ def evaluate_solutions(h5parm, mtf, threshold=0.25, verbose=False):
     Returns:
     The coherence metric for each station. (dict)
     """
-
+    print('\t- Evalulating phase solutions in', h5parm)
     h = lh5.h5parm(h5parm)
     solname = h.getSolsetNames()[0]  # set to -1 to use only the last solset
     solset = h.getSolset(solname)
@@ -2197,15 +2197,16 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
         tec_h5 = ms.replace(suffix, '.MS_tec.h5')
 
         print(source, '------------------------------------------------------')
-        print('MS:', ms)
-        print('Phase h5parm:', phase_h5)
-        print('Amplitude h5parm:', amplitude_h5)
-        print('TEC h5parm:', tec_h5, '\n')
+        print('\t- MS:', ms)
+        print('\t- Phase h5parm:', phase_h5)
+        print('\t- Amplitude h5parm:', amplitude_h5)
+        print('\t- TEC h5parm:', tec_h5, '\n')
 
         combined_h5 = combine_h5s(phase_h5=phase_h5,
                                   amplitude_h5=amplitude_h5,
                                   tec_h5=tec_h5)
 
+        evaluate_solutions(h5parm=combined_h5, mtf=mtf, threshold=threshold)
     # combined_133749_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
     #                                  'loopy/SILTJ133749.65+550102.6_L693725_' +
     #                                  'phasecal.apply_tec_00_c0.h5',
@@ -2216,7 +2217,6 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     #                                  'opy/SILTJ133749.65+550102.6_L693725_ph' +
     #                                  'asecal.MS_tec.h5')
     #
-    # evaluate_solutions(h5parm=combined_132737_h5, mtf=mtf, threshold=threshold)
     # evaluate_solutions(h5parm=combined_133749_h5, mtf=mtf, threshold=threshold)
     #
     # new_h5parms = dir2phasesol_wrapper(mtf=mtf,
