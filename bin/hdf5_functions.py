@@ -2187,6 +2187,8 @@ def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     print('asdfasdfasdf', ms)
     for i in ms:
         print(ms,'pppppppppppppp')
+        for jj in i:
+            print('when does it end',jj)
     # phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
     # amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
     # tec_h5 = ms.replace(suffix, '.MS_tec.h5')
