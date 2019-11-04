@@ -1101,7 +1101,7 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase']):
     parset = os.path.dirname(h5parm) + '/applyh5parm.parset'
     column_in = 'DATA'
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    msout = ms + '-' + str(uuid.uuid4())[:6] + '.MS'  # probably a better way
+    msout = h5parm[:-2] + 'MS'
 
     with open(parset, 'w') as f:  # create the parset
         f.write('# created by apply_h5parm at {}\n\n'.format(now))
@@ -1112,13 +1112,16 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase']):
 
         if 'amplitude' in solutions and 'tec' in solutions:
             print('Applying phase, amplitude, and TEC solutions.')
-            f.write('steps                               = [apply_phase, apply_diagonal, apply_tec]\n\n')
+            f.write('steps                               = [apply_phase, '
+                    'apply_diagonal, apply_tec]\n\n')
         elif 'amplitude' not in solutions and 'tec' in solutions:
             print('Applying phase and TEC solutions.')
-            f.write('steps                               = [apply_phase, apply_tec]\n\n')
+            f.write('steps                               = [apply_phase,'
+                    'apply_tec]\n\n')
         elif 'amplitude' in solutions and 'tec' not in solutions:
             print('Applying phase and amplitude solutions.')
-            f.write('steps                               = [apply_phase, apply_diagonal]\n\n')
+            f.write('steps                               = [apply_phase, '
+                    'apply_diagonal]\n\n')
         else:
             print('Applying phase solutions.')
             f.write('steps                               = [apply_phase]\n\n')
@@ -1130,15 +1133,16 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase']):
 
         if 'amplitude' in solutions:
             f.write('apply_diagonal.type                 = applycal\n')
-            f.write('apply_diagonal.parmdb               = {}\n'.format(h5parm))
+            f.write('apply_diagonal.parmdb               = %s\n' % h5parm)
             f.write('apply_diagonal.solset               = sol001\n')
-            f.write('apply_diagonal.steps                = [amplitude, phase]\n')
+            f.write('apply_diagonal.steps                = [amplitude, '
+                    'phase]\n')
             f.write('apply_diagonal.amplitude.correction = amplitude000\n')
             f.write('apply_diagonal.phase.correction     = phase000\n\n')
 
         if 'tec' in solutions:
             f.write('apply_tec.type                      = applycal\n')
-            f.write('apply_tec.parmdb                    = {}\n'.format(h5parm))
+            f.write('apply_tec.parmdb                    = %s\n' % h5parm)
             f.write('apply_tec.solset                    = sol002\n')
             f.write('apply_tec.correction                = tec000\n')
 
@@ -2246,7 +2250,11 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
         # resid_tec_h5parm, msout_tec = residual_tec_solve(ms=msout)
         # that is being built into loop 3
         msouts.append(msout_tec)
-    print(msouts)
+
+    print('Made {} new measurement sets:'.format(len(msouts)))
+    for i, msout in enumerate(msouts):
+        print('{}/{}: {}'.format(i, len(msouts), msout))
+
     # print('Running loop 3...')  # has to be run from the same directory as ms
     # for msout in msouts:
     #     cmd = ('python2 /data020/scratch/sean/letsgetloopy/lb-loop-2/' +
