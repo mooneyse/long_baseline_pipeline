@@ -2208,6 +2208,10 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
 
         evaluate_solutions(h5parm=combined_h5, mtf=mtf, threshold=threshold)
 
+        print('asdfasdfasdfasdfasdf')
+        print('dir', type(directions), directions)
+        print('cores', type(cores), cores)
+
     # new_h5parms = dir2phasesol_wrapper(mtf=mtf,
     #                                    ms=ms,
     #                                    directions=directions,
