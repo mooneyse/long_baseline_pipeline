@@ -8,6 +8,7 @@ https://github.com/lmorabit/long_baseline_pipeline.
 from __future__ import print_function
 from multiprocessing import Pool
 import argparse
+import ast
 import csv
 import datetime
 import fnmatch
@@ -2184,11 +2185,13 @@ def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     make_blank_mtf(mtf=mtf)
     # for ms in ms_list:
     suffix = '.apply_tec'
+    ms = ast.literal_eval(ms)
+
     print('asdfasdfasdf', type(ms), ms)
     for i in ms:
         print(ms,'pppppppppppppp', type(i))
-        for jj in i:
-            print('when does it end',jj)
+        # for jj in i:
+        #     print('when does it end',jj)
     # phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
     # amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
     # tec_h5 = ms.replace(suffix, '.MS_tec.h5')
