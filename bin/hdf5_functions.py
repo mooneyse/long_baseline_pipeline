@@ -2184,7 +2184,7 @@ def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     make_blank_mtf(mtf=mtf)
     # for ms in ms_list:
     suffix = '.apply_tec'
-
+    print('asdfasdfasdf', ms)
     phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
     amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
     tec_h5 = ms.replace(suffix, '.MS_tec.h5')
