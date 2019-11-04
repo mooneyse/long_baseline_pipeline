@@ -2189,18 +2189,19 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     for ms in ms_list:
         sources.append(ms.split('/')[-1][:-10])
 
-    print('Found', len(ms_list), 'sources:', sources)
+    print('Found', len(ms_list), 'sources:', ', '.join(sources))
 
-    for ms in ms_list:
+    for ms, source in zip(ms_list, sources):
         phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
         amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
         tec_h5 = ms.replace(suffix, '.MS_tec.h5')
 
-        print('my ms:', ms)
-        print('my phase:', phase_h5)
-        print('my amp:', amplitude_h5)
-        print('my tec:', tec_h5)
-    print('--------------------------------------------------------------')
+        print(source, '------------------------------------------------------')
+        print('MS:', ms)
+        print('Phase h5parm:', phase_h5)
+        print('Amplitude h5parm:', amplitude_h5)
+        print('TEC h5parm:', tec_h5, '\n')
+
 
     # combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
     #                                  'loopy/SILTJ132737.15+550405.9_L693725_' +
