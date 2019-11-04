@@ -2185,14 +2185,16 @@ def main(ms, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     # for ms in ms_list:
     suffix = '.apply_tec'
     print('asdfasdfasdf', ms)
-    phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
-    amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
-    tec_h5 = ms.replace(suffix, '.MS_tec.h5')
-
-    print('my ms:', ms)
-    print('my phase:', phase_h5)
-    print('my amp:', amplitude_h5)
-    print('my tec:', tec_h5)
+    for i in ms:
+        print(ms,'pppppppppppppp')
+    # phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
+    # amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
+    # tec_h5 = ms.replace(suffix, '.MS_tec.h5')
+    #
+    # print('my ms:', ms)
+    # print('my phase:', phase_h5)
+    # print('my amp:', amplitude_h5)
+    # print('my tec:', tec_h5)
     print('--------------------------------------------------------------')
 
     # combined_132737_h5 = combine_h5s(phase_h5='/data020/scratch/sean/letsget' +
