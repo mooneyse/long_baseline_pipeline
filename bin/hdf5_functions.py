@@ -29,6 +29,7 @@ __author__ = 'Sean Mooney'
 # TODO remove repeated code, swap range(len()) to enumerate, etc
 # TODO tidy docstrings (numpydoc docstring format ideally, e.g. see
 #      residual_tec_solve)
+# TODO change print commands to logging commands
 # TODO https://github.com/mooneyse/lb-loop-2/issues/11
 # TODO https://github.com/mooneyse/lb-loop-2/issues/10
 # TODO https://github.com/mooneyse/lb-loop-2/issues/9
@@ -43,6 +44,8 @@ __author__ = 'Sean Mooney'
 #      ideally giving the option, and let the directions be in degrees,
 #      radians, or sexagesimals.
 # TODO plot the h5parms with losoto
+# TODO time how long loop 2 takes and see if there are ways to increase the
+#      performance. apply_tec should run in parallel.
 
 
 def dir_from_ms(ms, verbose=False):
@@ -1088,7 +1091,8 @@ def residual_tec_solve(ms, column_out='DATA', solint=5):
 
 def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False,
                  time_step=4, freq_step=4, phase_center='', column_in='DATA',
-                 phase_up="{ST001:'CS*'}", filter_cmd="'!CS*&*'"):
+                 phase_up="{ST001:'CS*'}", filter_cmd="'!CS*&*'",
+                 execute=True):
     """Creates an NDPPP parset. Applies the output of make_h5parm to the
     measurement set.
 
@@ -1182,7 +1186,10 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False,
             f.write('apply_tec.solset                    = sol002\n')
             f.write('apply_tec.correction                = tec000\n')
 
-    subprocess.check_output(['NDPPP', parset])
+    if execute:
+        subprocess.check_output(['NDPPP', parset])
+    else:
+        return parset, msout
     if tidy:
         print('Deleting the parset.')
         os.remove(parset)
@@ -2276,28 +2283,43 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
         coords_str = ', '.join(new_h5parm.split('/')[-1][:-3].split('_')[-2:])
         print('Direction {}: {}'.format(coords_str, new_h5parm))
 
-    msouts = []
+    parsets, msouts = [], []
     for new_h5parm, ra, dec in zip(new_h5parms, dir_dict['ra'],
                                    dir_dict['dec']):
-        # outputs a measurement set per direction
-        msout = apply_h5parm(h5parm=new_h5parm, col_out='DATA', ms=delaycal_ms,
-                             time_step=time_step, freq_step=freq_step,
-                             phase_center=[ra, dec], phase_up=phase_up,
-                             filter_cmd=filter_cmd, tidy=False,
-                             column_in=column_in,
-                             solutions=['phase', 'amplitude', 'tec'])
-        msout_tec = msout  # TODO need a skymodel in residual_tec_solve to test
-        # resid_tec_h5parm, msout_tec = residual_tec_solve(ms=msout)
-        # that is being built into loop 3
-        msouts.append(msout_tec)
-        # should the ms include shifting and averaging? are the solutions
-        # applied to these data or the LB-Delay-Calibrator.parset output?
+        # outputs a measurement set per direction that is shifted and averaged
+        # we do not execute the parset with ndppp when running apply_h5parm,
+        # we just get the newly created parset, and then we run them in
+        # parallel
+        parset, msout = apply_h5parm(h5parm=new_h5parm, col_out='DATA',
+                                     ms=delaycal_ms,
+                                     time_step=time_step, freq_step=freq_step,
+                                     phase_center=[ra, dec], phase_up=phase_up,
+                                     filter_cmd=filter_cmd, tidy=False,
+                                     column_in=column_in, execute=False,
+                                     solutions=['phase', 'amplitude', 'tec'])
+        parsets.append(parset)
+        msouts.append(msout)
+
+    # now execute the parsets in parallel
+    print('Running NDPPP in {} directions on {} CPUs in'
+          'parallel'.format(len(parsets), cores))
+    processes = set()
+    for name in parsets:
+        processes.add(subprocess.Popen(['NDPPP', name]))
+        if len(processes) >= cores:
+            os.wait()
+            processes.difference_update(
+                [p for p in processes if p.poll() is not None])
+    # check if all the child processes were closed
+    for p in processes:
+        if p.poll() is None:
+            p.wait()
 
     print('Made {} new measurement sets:'.format(len(msouts)))
     for i, msout in enumerate(msouts):
         print('{}/{}: {}'.format(i + 1, len(msouts), msout))
 
-    # time the commands when testing
+
     # print('Running loop 3...')  # has to be run from the same directory as ms
     # for msout in msouts:
     #     cmd = ('python2 /data020/scratch/sean/letsgetloopy/lb-loop-2/' +
