@@ -16,7 +16,6 @@ import glob
 import os
 import subprocess
 import numpy as np
-# import pandas as pd  # no pandas in the singularity image
 from astropy.coordinates import SkyCoord
 from scipy.interpolate import interp1d
 from losoto.lib_operations import reorderAxes
@@ -25,6 +24,7 @@ import pyrap.tables as pt
 
 __author__ = 'Sean Mooney'
 
+# NOTE no pandas
 # TODO split into multiple scripts
 # TODO switch to interpolating LoSoTo solutions with NaN
 # TODO is there an easier way to add soltabs?
