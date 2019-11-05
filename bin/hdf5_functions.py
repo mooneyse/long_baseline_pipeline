@@ -675,7 +675,7 @@ def dir2phasesol(mtf, ms='', directions=[]):
 
     # create a new h5parm
     ms = os.path.splitext(os.path.normpath(ms))[0]
-    new_h5parm = ('{}/h5parm_{:.3f}_{:.3f}_'
+    new_h5parm = ('{}/h5parm_{:.3f}_{:.3f}'
                   '.h5'.format(os.path.dirname(ms),
                                np.round(directions.ra.deg, 3),
                                np.round(directions.dec.deg, 3)))
