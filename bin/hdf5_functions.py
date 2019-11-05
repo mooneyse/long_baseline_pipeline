@@ -15,7 +15,6 @@ import fnmatch
 import glob
 import os
 import subprocess
-import uuid
 import numpy as np
 from astropy.coordinates import SkyCoord
 from scipy.interpolate import interp1d
@@ -24,7 +23,6 @@ import losoto.h5parm as lh5  # on CEP3, "module load losoto"
 import pyrap.tables as pt
 
 __author__ = 'Sean Mooney'
-__date__ = '01 June 2019'
 
 # TODO switch to interpolating LoSoTo solutions with NaN
 # TODO is there an easier way to add soltabs?
