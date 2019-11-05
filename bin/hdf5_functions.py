@@ -1098,7 +1098,7 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False):
     """
 
     # parset is saved in same directory as the h5parm
-    parset = os.path.dirname(h5parm) + '/applyh5parm.parset'
+    parset = h5parm[:-2] + '_applyh5parm.parset'
     column_in = 'DATA'
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     msout = h5parm[:-2] + 'MS'
@@ -1150,8 +1150,7 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False):
             f.write('apply_tec.solset                    = sol002\n')
             f.write('apply_tec.correction                = tec000\n')
 
-    print('NDPPP', parset)
-    # subprocess.check_output(['NDPPP', parset])
+    subprocess.check_output(['NDPPP', parset])
     if tidy:
         print('Deleting the parset.')
         os.remove(parset)
