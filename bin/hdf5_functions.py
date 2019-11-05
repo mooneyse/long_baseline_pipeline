@@ -2231,7 +2231,6 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
     ms_list = ast.literal_eval(calibrators_ms)
     cores = int(cores)
     _ = []
-    dir_dict = directions
     if type(directions) is str:
         if directions[0] != '{':
             directions = '{' + directions + '}'
@@ -2243,6 +2242,7 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
         for r, d in zip(directions['ra'], directions['dec']):
             _.append(r)
             _.append(d)
+    dir_dict = directions
     directions = _
 
     make_blank_mtf(mtf=mtf)
