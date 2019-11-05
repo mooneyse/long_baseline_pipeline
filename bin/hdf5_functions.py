@@ -2243,7 +2243,7 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
     directions, rad_ra_list, rad_dec_list = [], [], []
     df = pd.read_csv(directions_file)
     df.columns = map(str.lower, df.columns)
-    df['source_id'] = 'source_' + df['Source_id'].astype(str)
+    df['source_id'] = 'direction_' + df['Source_id'].astype(str)
     if 'units' in df.columns:
         df = df.rename({'units': 'unit'}, axis='columns')  # either are fine
     if 'unit' not in df.columns:
