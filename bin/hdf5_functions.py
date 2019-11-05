@@ -1079,7 +1079,9 @@ def residual_tec_solve(ms, column_out='DATA', solint=5):
     return msout, h5parm
 
 
-def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False):
+def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False,
+                 time_step=4, freq_step=4, phase_center='',
+                 phase_up="{ST001:'CS*'}", filter_cmd="'!CS*&*'"):
     """Creates an NDPPP parset. Applies the output of make_h5parm to the
     measurement set.
 
@@ -1119,23 +1121,40 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False):
         if 'amplitude' in solutions and 'tec' in solutions:
             print('Applying phase, amplitude, and TEC solutions in'
                   ' %s to %s' % (h5parm, ms))
-            f.write('steps                               = [apply_phase, '
+            f.write('steps                               = [phaseshift, '
+                    'average, stationadder, filter, apply_phase, '
                     'apply_diagonal, apply_tec]\n\n')
         elif 'amplitude' not in solutions and 'tec' in solutions:
             print('Applying phase and TEC solutions in'
                   ' %s to %s' % (h5parm, ms))
-            f.write('steps                               = [apply_phase,'
+            f.write('steps                               = [phaseshift, '
+                    'average, stationadder, filter, apply_phase, '
                     'apply_tec]\n\n')
         elif 'amplitude' in solutions and 'tec' not in solutions:
             print('Applying phase and amplitude solutions in'
                   ' %s to %s' % (h5parm, ms))
-            f.write('steps                               = [apply_phase, '
+            f.write('steps                               = [phaseshift, '
+                    'average, stationadder, filter, apply_phase, '
                     'apply_diagonal]\n\n')
         else:
             print('Applying phase solutions in'
                   ' %s to %s' % (h5parm, ms))
-            f.write('steps                               = [apply_phase]\n\n')
+            f.write('steps                               = [phaseshift, '
+                    'average, stationadder, filter, apply_phase]\n\n')
 
+        f.write('phaseshift.type                     = phaseshift\n')
+        f.write('phaseshift.phasecenter              = '
+                '{}\n\n'.format(phase_center))
+        f.write('average.type                        = average\n')
+        f.write('average.timestep                    = {}\n'.format(time_step))
+        f.write('average.freqstep                    = '
+                '{}\n\n'.format(freq_step))
+        f.write('stationadder.type                   = stationadder\n')
+        f.write('stationadder.stations               = '
+                '{}\n\n'.format(phase_up))
+        f.write('filter.type                         = filter\n')
+        f.write('filter.type                         = '
+                '{}\n\n'.format(filter_cmd))
         f.write('apply_phase.type                    = applycal\n')
         f.write('apply_phase.parmdb                  = {}\n'.format(h5parm))
         f.write('apply_phase.solset                  = sol000\n')
@@ -2192,23 +2211,30 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
 
 
 def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
-         cores=4, directions=[]):
+         cores=4, directions=[], time_step=4, freq_step=4,
+         phase_up="{ST001:'CS*'}", filter_cmd="'!CS*&*'"):
     """First, evaluate the h5parm phase solutions. Then for a given direction,
     make a new h5parm of acceptable solutions from the nearest direction for
     each station. Apply the solutions to the measurement set. Run loop 3 to
     image the measurement set in the given direction. Updates the master text
     file with the new best solutions after loop 3 is called.
     """
-    # NOTE get loop 3 solutions in a few directions. then i can use the apply_tec mapfile.
-    # and from the vis i can build the phase, amplitude and tec h5s
+    # NOTE get loop 3 solutions in a few directions. then i can use the
+    # apply_tec mapfile. and from the vis i can build the phase, amplitude and
+    # tec h5s
 
     # check that the documentation for each function has the right format and
     # parameters
 
+    # change so that if dirs
+
     ms_list = ast.literal_eval(calibrators_ms)
     cores = int(cores)
     _ = []
+    dir_dict = directions
     if type(directions) is str:
+        if directions[0] != '{':
+            directions = '{' + directions + '}'
         directions = ast.literal_eval(directions)
         if 'unit' in directions.keys():
             if directions['unit'][:3].lower() != 'rad':
@@ -2245,7 +2271,6 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
         evaluate_solutions(h5parm=combined_h5, mtf=mtf, threshold=threshold)
 
     new_h5parms = dir2phasesol_wrapper(mtf=mtf,
-                                       # ms=delaycal_ms,
                                        directions=directions,
                                        cores=cores)
 
@@ -2256,11 +2281,14 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
         # TODO plot the h5parms with losoto
 
     msouts = []
-    for new_h5parm in new_h5parms:
+    for new_h5parm, ra, dec in zip(new_h5parms, dir_dict['ra'],
+                                   dir_dict['dec']):
         # outputs an ms per direction
         # NOTE add averaging!
-        msout = apply_h5parm(h5parm=new_h5parm,
-                             ms=ms,
+        msout = apply_h5parm(h5parm=new_h5parm, col_out='DATA', tidy=False,
+                             ms=ms, time_step=time_step, freq_step=freq_step,
+                             phase_center=[ra, dec], phase_up=phase_up,
+                             filter_cmd=filter_cmd,
                              solutions=['phase', 'amplitude', 'tec'])
         msout_tec = msout  # TODO need a skymodel in residual_tec_solve to test
         # resid_tec_h5parm, msout_tec = residual_tec_solve(ms=msout)
