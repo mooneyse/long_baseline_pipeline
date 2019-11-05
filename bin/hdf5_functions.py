@@ -1101,7 +1101,7 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False):
     parset = h5parm[:-2] + '_applyh5parm.parset'
     column_in = 'DATA'
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    msout = h5parm[:-2] + 'MS'
+    msout = h5parm[:-3] + 'MS'
 
     with open(parset, 'w') as f:  # create the parset
         f.write('# created by apply_h5parm at {}\n\n'.format(now))
@@ -2262,6 +2262,7 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     for i, msout in enumerate(msouts):
         print('{}/{}: {}'.format(i + 1, len(msouts), msout))
 
+    # time the commands when testing
     # print('Running loop 3...')  # has to be run from the same directory as ms
     # for msout in msouts:
     #     cmd = ('python2 /data020/scratch/sean/letsgetloopy/lb-loop-2/' +
