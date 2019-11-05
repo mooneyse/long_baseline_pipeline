@@ -27,7 +27,8 @@ __author__ = 'Sean Mooney'
 # TODO switch to interpolating LoSoTo solutions with NaN
 # TODO is there an easier way to add soltabs?
 # TODO remove repeated code, swap range(len()) to enumerate, etc
-# TODO tidy docstrings
+# TODO tidy docstrings (numpydoc docstring format ideally, e.g. see
+#      residual_tec_solve)
 # TODO https://github.com/mooneyse/lb-loop-2/issues/11
 # TODO https://github.com/mooneyse/lb-loop-2/issues/10
 # TODO https://github.com/mooneyse/lb-loop-2/issues/9
@@ -36,6 +37,12 @@ __author__ = 'Sean Mooney'
 # TODO add a function to output something like this:
 #      https://i.imgur.com/G0BZktL.png
 # TODO possibly change the directions to be read in as a dictionary
+# TODO check that the documentation for each function has the right format and
+#      parameters
+# TODO read in a text file called directions.txt instead of a dictionary,
+#      ideally giving the option, and let the directions be in degrees,
+#      radians, or sexagesimals.
+# TODO plot the h5parms with losoto
 
 
 def dir_from_ms(ms, verbose=False):
@@ -1028,7 +1035,9 @@ def dir2phasesol(mtf, directions=[]):  # , ms=''
 
 
 def residual_tec_solve(ms, column_out='DATA', solint=5):
-    """Write a parset to solve for the residual TEC in the measurement set
+    """Solve for TEC using NDPPP.
+
+    Write a parset to solve for the residual TEC in the measurement set
     using Gaincal, then execute the parset using NDPPP. For information on
     NDPPP, see this URL:
     https://www.astron.nl/lofarwiki/doku.php?id=public:user_software:documentat
@@ -1038,11 +1047,11 @@ def residual_tec_solve(ms, column_out='DATA', solint=5):
     ----------
     ms : string
         Filename of the measurement set.
-    column_out : string
+    column_out : string, optional
         Name of the column in the measurement set to write the corrected data
-        to.
-    solint : float
-        Solution interval for the TEC solve.
+        to (the default is DATA).
+    solint : float, optional
+        Solution interval in seconds for the TEC solve (the default is 5).
 
     Returns
     -------
@@ -2210,22 +2219,13 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
 
 def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
          cores=4, directions=[], time_step=4, freq_step=4, column_in='DATA',
-         phase_up="{ST001:'CS*'}", filter_cmd="'!CS*&*'"):
+         phase_up="{ST001:'CS*'}", filter_cmd="'!CS*&*'", suffix='.apply_tec'):
     """First, evaluate the h5parm phase solutions. Then for a given direction,
     make a new h5parm of acceptable solutions from the nearest direction for
     each station. Apply the solutions to the measurement set. Run loop 3 to
     image the measurement set in the given direction. Updates the master text
     file with the new best solutions after loop 3 is called.
     """
-    # NOTE get loop 3 solutions in a few directions. then i can use the
-    # apply_tec mapfile. and from the vis i can build the phase, amplitude and
-    # tec h5s
-
-    # check that the documentation for each function has the right format and
-    # parameters
-
-    # change so that if dirs
-
     ms_list = ast.literal_eval(calibrators_ms)
     cores = int(cores)
     _ = []
@@ -2240,11 +2240,10 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
         for r, d in zip(directions['ra'], directions['dec']):
             _.append(r)
             _.append(d)
-    dir_dict = directions
+    dir_dict = directions  # HACK this works but is not optimal
     directions = _
 
     make_blank_mtf(mtf=mtf)
-    suffix = '.apply_tec'
     sources = []
     for ms in ms_list:
         sources.append(ms.split('/')[-1][:-19])
@@ -2276,13 +2275,11 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
     for new_h5parm in new_h5parms:
         coords_str = ', '.join(new_h5parm.split('/')[-1][:-3].split('_')[-2:])
         print('Direction {}: {}'.format(coords_str, new_h5parm))
-        # TODO plot the h5parms with losoto
 
     msouts = []
     for new_h5parm, ra, dec in zip(new_h5parms, dir_dict['ra'],
                                    dir_dict['dec']):
-        # outputs an ms per direction
-        # NOTE add averaging!
+        # outputs a measurement set per direction
         msout = apply_h5parm(h5parm=new_h5parm, col_out='DATA', ms=delaycal_ms,
                              time_step=time_step, freq_step=freq_step,
                              phase_center=[ra, dec], phase_up=phase_up,
