@@ -371,12 +371,12 @@ def evaluate_solutions(h5parm, mtf, threshold=0.25, verbose=False):
     return evaluations
 
 
-def dir2phasesol_wrapper(mtf, ms, directions=[], cores=4):
+def dir2phasesol_wrapper(mtf, directions=[], cores=4):  # , ms=''
     """Book-keeping to get the multiprocessing set up and running.
 
     Args:
     mtf (str): The master text file.
-    ms (str): The measurement set.
+    # ms (str): The measurement set.
     directions (list; default = []): Directions in radians, of the form RA1,
         Dec1, RA2, Dec2, etc.
     cores (float; default = 4): Number of cores to use.
@@ -385,16 +385,17 @@ def dir2phasesol_wrapper(mtf, ms, directions=[], cores=4):
     The names of the newly created h5parms in the directions specified. (list)
     """
 
-    if not directions:
-        directions = dir_from_ms(ms)
+    # if not directions:
+    #     directions = dir_from_ms(ms)
 
-    mtf_list, ms_list = [], []
+    mtf_list = []  # ms_list, []
     for i in range(int(len(directions) / 2)):
         mtf_list.append(mtf)
-        ms_list.append(ms)
+        # ms_list.append(ms)
 
     directions_paired = list(zip(directions[::2], directions[1::2]))
-    multiprocessing = list(zip(mtf_list, ms_list, directions_paired))
+    # multiprocessing = list(zip(mtf_list, ms_list, directions_paired))
+    multiprocessing = list(zip(mtf_list, directions_paired))
     pool = Pool(cores)  # specify cores
     new_h5parms = pool.map(dir2phasesol_multiprocessing, multiprocessing)
 
@@ -471,9 +472,9 @@ def dir2phasesol_multiprocessing(args):
         h5parm file. (str)
     """
 
-    mtf, ms, directions = args
-
-    return dir2phasesol(mtf=mtf, ms=ms, directions=directions)
+    mtf, directions = args
+    # return dir2phasesol(mtf=mtf, ms=ms, directions=directions)
+    return dir2phasesol(mtf=mtf, directions=directions)
 
 
 def build_soltab(soltab, working_data, solset):
@@ -589,7 +590,7 @@ def build_soltab(soltab, working_data, solset):
     return vals, weights, new_time, my_freqs
 
 
-def dir2phasesol(mtf, ms='', directions=[]):
+def dir2phasesol(mtf, directions=[]):  # , ms=''
     '''Get the directions of the h5parms from the master text file. Calculate
     the separation between a list of given directions and the h5parm
     directions. For each station, find the h5parm of smallest separation which
@@ -640,7 +641,7 @@ def dir2phasesol(mtf, ms='', directions=[]):
 
     # find the closest h5parm which has an acceptable solution for each station
     # a forward slash is added to the ms name in case it does not end in one
-    parts = {'prefix': os.path.dirname(os.path.dirname(ms + '/')),
+    parts = {'prefix': os.path.dirname(os.path.dirname(mtf + '/')),
              'ra': directions.ra.deg,
              'dec': directions.dec.deg}
 
@@ -674,9 +675,9 @@ def dir2phasesol(mtf, ms='', directions=[]):
     f.close()
 
     # create a new h5parm
-    ms = os.path.splitext(os.path.normpath(ms))[0]
-    new_h5parm = ('{}/h5parm_{:.3f}_{:.3f}'
-                  '.h5'.format(os.path.dirname(ms),
+    # ms = os.path.splitext(os.path.normpath(ms))[0]
+    new_h5parm = ('{}/direction_{:.3f}_{:.3f}'
+                  '.h5'.format(os.path.dirname(mtf),
                                np.round(directions.ra.deg, 3),
                                np.round(directions.dec.deg, 3)))
     # new_h5parm = '{}_{}_{}.h5'.format(ms, np.round(directions.ra.deg, 3),
@@ -1102,11 +1103,10 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False):
     """
 
     # parset is saved in same directory as the h5parm
-    parset = (os.path.dirname(h5parm) + 'applyh5parm_' + h5parm[-17:-2] +
-              'parset')
+    parset = h5parm[:-2] + 'parset'
     column_in = 'DATA'
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    msout = os.path.dirname(h5parm) + 'direction_' + h5parm[-17:-2] + 'MS'
+    msout = h5parm[:-2] + 'MS'
     # msout looks like /data/scratch/sean/direction_133.404_20.111.MS
 
     with open(parset, 'w') as f:  # create the parset
@@ -2191,7 +2191,8 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
     return rejigged_h5parm
 
 
-def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
+def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
+         cores=4, directions=[]):
     """First, evaluate the h5parm phase solutions. Then for a given direction,
     make a new h5parm of acceptable solutions from the nearest direction for
     each station. Apply the solutions to the measurement set. Run loop 3 to
@@ -2201,7 +2202,10 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     # NOTE get loop 3 solutions in a few directions. then i can use the apply_tec mapfile.
     # and from the vis i can build the phase, amplitude and tec h5s
 
-    ms_list = ast.literal_eval(ms_list)
+    # check that the documentation for each function has the right format and
+    # parameters
+
+    ms_list = ast.literal_eval(calibrators_ms)
     cores = int(cores)
     _ = []
     if type(directions) is str:
@@ -2241,7 +2245,7 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
         evaluate_solutions(h5parm=combined_h5, mtf=mtf, threshold=threshold)
 
     new_h5parms = dir2phasesol_wrapper(mtf=mtf,
-                                       ms=ms,
+                                       # ms=delaycal_ms,
                                        directions=directions,
                                        cores=cores)
 
@@ -2254,6 +2258,7 @@ def main(ms_list, mtf='mtf.txt', threshold=0.25, cores=4, directions=[]):
     msouts = []
     for new_h5parm in new_h5parms:
         # outputs an ms per direction
+        # NOTE add averaging!
         msout = apply_h5parm(h5parm=new_h5parm,
                              ms=ms,
                              solutions=['phase', 'amplitude', 'tec'])
@@ -2338,4 +2343,5 @@ if __name__ == '__main__':
     cores = args.cores
     directions = args.directions
 
-    main(ms, mtf=mtf, threshold=threshold, cores=cores, directions=directions)
+    main(ms, delaycal_ms=ms, mtf=mtf, threshold=threshold, cores=cores,
+         directions=directions)
