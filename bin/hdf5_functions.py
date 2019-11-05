@@ -1153,8 +1153,9 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False,
         f.write('stationadder.stations               = '
                 '{}\n\n'.format(phase_up))
         f.write('filter.type                         = filter\n')
-        f.write('filter.type                         = '
-                '{}\n\n'.format(filter_cmd))
+        f.write('filter.baseline                     = '
+                '{}\n'.format(filter_cmd))
+        f.write('filter.remove                       = True\n\n')
         f.write('apply_phase.type                    = applycal\n')
         f.write('apply_phase.parmdb                  = {}\n'.format(h5parm))
         f.write('apply_phase.solset                  = sol000\n')
@@ -2285,10 +2286,10 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
                                    dir_dict['dec']):
         # outputs an ms per direction
         # NOTE add averaging!
-        msout = apply_h5parm(h5parm=new_h5parm, col_out='DATA', tidy=False,
-                             ms=ms, time_step=time_step, freq_step=freq_step,
+        msout = apply_h5parm(h5parm=new_h5parm, col_out='DATA', ms=delaycal_ms, 
+                             time_step=time_step, freq_step=freq_step,
                              phase_center=[ra, dec], phase_up=phase_up,
-                             filter_cmd=filter_cmd,
+                             filter_cmd=filter_cmd, tidy=False,
                              solutions=['phase', 'amplitude', 'tec'])
         msout_tec = msout  # TODO need a skymodel in residual_tec_solve to test
         # resid_tec_h5parm, msout_tec = residual_tec_solve(ms=msout)
