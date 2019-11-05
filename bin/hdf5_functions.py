@@ -16,7 +16,7 @@ import glob
 import os
 import subprocess
 import numpy as np
-import pandas as pd
+# import pandas as pd  # no pandas in the singularity image
 from astropy.coordinates import SkyCoord
 from scipy.interpolate import interp1d
 from losoto.lib_operations import reorderAxes
@@ -2241,14 +2241,23 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
     ms_list = ast.literal_eval(calibrators_ms)
     cores = int(cores)
     directions, rad_ra_list, rad_dec_list = [], [], []
-    df = pd.read_csv(directions_file)
-    df.columns = map(str.lower, df.columns)
-    df['source_id'] = 'direction_' + df['Source_id'].astype(str)
-    if 'units' in df.columns:
-        df = df.rename({'units': 'unit'}, axis='columns')  # either are fine
-    if 'unit' not in df.columns:
-        df['unit'] = 'radians'  # assume radians if no units given
-    for ra, dec, unit in zip(df['ra'], df['dec'], df['unit']):
+
+    with open(directions_file) as csvfile:
+        reader = csv.DictReader(csvfile, skipinitialspace=True)
+        dir_dict = {name: [] for name in reader.fieldnames}
+        for row in reader:
+            for name in reader.fieldnames:
+                dir_dict[name].append(row[name])
+    dir_dict = dict((k.lower() if isinstance(k, basestring) else k, v.lower() if isinstance(v, basestring) else v) for k,v in dir_dict.iteritems())
+    if 'units' in dir_dict:
+        dir_dict['unit'] = dir_dict.pop('units')
+    if 'unit' not in dir_dict:
+        rads = []
+        for r in range(len(dir_dict['ra'])):
+            rads.append('radians')
+        dir_dict['unit'] = rads   # assume radians if no units given
+    for ra, dec, unit in zip(dir_dict['ra'], dir_dict['dec'],
+                             dir_dict['unit']):
         if unit[:3].lower() == 'rad':
             directions.append(ra)
             directions.append(dec)
@@ -2259,10 +2268,10 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
             directions.append(dec * np.pi / 180)
             rad_ra_list.append(ra * np.pi / 180)
             rad_dec_list.append(dec * np.pi / 180)
-        else:
             raise NotImplementedError('Positions in {} must be in radians or '
                                       'degrees'.format(directions_file))
-    dir_dict = {'ra': rad_ra_list, 'dec': rad_dec_list}
+    dir_dict['ra'] = rad_ra_list
+    dir_dict['dec'] = rad_dec_list
 
     make_blank_mtf(mtf=mtf)
     sources = []
