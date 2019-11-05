@@ -675,8 +675,12 @@ def dir2phasesol(mtf, ms='', directions=[]):
 
     # create a new h5parm
     ms = os.path.splitext(os.path.normpath(ms))[0]
-    new_h5parm = '{}_{}_{}.h5'.format(ms, np.round(directions.ra.deg, 3),
-                                      np.round(directions.dec.deg, 3))
+    new_h5parm = ('{}/h5parm_{:.3f}_{:.3f}_'
+                  '.h5'.format(os.path.dirname(ms),
+                               np.round(directions.ra.deg, 3),
+                               np.round(directions.dec.deg, 3)))
+    # new_h5parm = '{}_{}_{}.h5'.format(ms, np.round(directions.ra.deg, 3),
+    #                                   np.round(directions.dec.deg, 3))
     h = lh5.h5parm(new_h5parm, readonly=False)
     table = h.makeSolset()  # creates sol000
     solset = h.getSolset('sol000')  # on the new h5parm
@@ -1098,10 +1102,12 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False):
     """
 
     # parset is saved in same directory as the h5parm
-    parset = h5parm[:-2] + '_applyh5parm.parset'
+    parset = (os.path.dirname(h5parm) + 'applyh5parm_' + h5parm[-17:-2] +
+              'parset')
     column_in = 'DATA'
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    msout = h5parm[:-3] + 'MS'
+    msout = os.path.dirname(h5parm) + 'direction_' + h5parm[-17:-2] + 'MS'
+    # msout looks like /data/scratch/sean/direction_133.404_20.111.MS
 
     with open(parset, 'w') as f:  # create the parset
         f.write('# created by apply_h5parm at {}\n\n'.format(now))
