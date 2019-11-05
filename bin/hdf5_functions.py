@@ -2240,14 +2240,14 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
     """
     ms_list = ast.literal_eval(calibrators_ms)
     cores = int(cores)
-    directions, rad_ra_list, rad_dec_list = [], [], []
+directions, rad_ra_list, rad_dec_list = [], [], []
 
-    with open(directions_file) as csvfile:
-        reader = csv.DictReader(csvfile, skipinitialspace=True)
-        dir_dict = {name: [] for name in reader.fieldnames}
-        for row in reader:
-            for name in reader.fieldnames:
-                dir_dict[name].append(row[name])
+with open(directions_file) as csvfile:
+    reader = csv.DictReader(csvfile, skipinitialspace=True)
+    dir_dict = {name: [] for name in reader.fieldnames}
+    for row in reader:
+        for name in reader.fieldnames:
+            dir_dict[name].append(row[name])
     dir_dict = dict((k.lower() if isinstance(k, basestring) else k, v.lower() if isinstance(v, basestring) else v) for k,v in dir_dict.iteritems())
     if 'units' in dir_dict:
         dir_dict['unit'] = dir_dict.pop('units')
@@ -2259,15 +2259,15 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
     for ra, dec, unit in zip(dir_dict['ra'], dir_dict['dec'],
                              dir_dict['unit']):
         if unit[:3].lower() == 'rad':
-            directions.append(ra)
-            directions.append(dec)
-            rad_ra_list.append(ra)
-            rad_dec_list.append(dec)
+            directions.append(float(ra))
+            directions.append(float(dec))
+            rad_ra_list.append(float(ra))
+            rad_dec_list.append(float(dec))
         elif unit[:3].lower() == 'deg':
-            directions.append(ra * np.pi / 180)
-            directions.append(dec * np.pi / 180)
-            rad_ra_list.append(ra * np.pi / 180)
-            rad_dec_list.append(dec * np.pi / 180)
+            directions.append(float(ra) * np.pi / 180)
+            directions.append(float(dec) * np.pi / 180)
+            rad_ra_list.append(float(ra) * np.pi / 180)
+            rad_dec_list.append(float(dec) * np.pi / 180)
             raise NotImplementedError('Positions in {} must be in radians or '
                                       'degrees'.format(directions_file))
     dir_dict['ra'] = rad_ra_list
