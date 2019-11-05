@@ -16,6 +16,7 @@ import glob
 import os
 import subprocess
 import numpy as np
+import pandas as pd
 from astropy.coordinates import SkyCoord
 from scipy.interpolate import interp1d
 from losoto.lib_operations import reorderAxes
@@ -30,6 +31,7 @@ __author__ = 'Sean Mooney'
 # TODO tidy docstrings (numpydoc docstring format ideally, e.g. see
 #      residual_tec_solve)
 # TODO change print commands to logging commands
+# TODO only uses default loop 3 parameters
 # TODO https://github.com/mooneyse/lb-loop-2/issues/11
 # TODO https://github.com/mooneyse/lb-loop-2/issues/10
 # TODO https://github.com/mooneyse/lb-loop-2/issues/9
@@ -2225,8 +2227,10 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
 
 
 def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
-         cores=4, directions=[], time_step=4, freq_step=4, column_in='DATA',
-         phase_up="{ST001:'CS*'}", filter_cmd="'!CS*&*'", suffix='.apply_tec'):
+         cores=4, time_step=4, freq_step=4, column_in='DATA',
+         phase_up="{ST001:'CS*'}", filter_cmd="'!CS*&*'", suffix='.apply_tec',
+         loop3_script='./loop3B_v1.py',
+         directions_file='loop2_directions.csv'):
     """First, evaluate the h5parm phase solutions. Then for a given direction,
     make a new h5parm of acceptable solutions from the nearest direction for
     each station. Apply the solutions to the measurement set. Run loop 3 to
@@ -2235,20 +2239,29 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
     """
     ms_list = ast.literal_eval(calibrators_ms)
     cores = int(cores)
-    _ = []
-    if type(directions) is str:
-        if directions[0] != '{':
-            directions = '{' + directions + '}'
-        directions = ast.literal_eval(directions)
-        if 'unit' in directions.keys():
-            if directions['unit'][:3].lower() != 'rad':
-                # TODO convert coordinates here if they are given as degrees
-                raise NotImplementedError('Directions must be in radians.')
-        for r, d in zip(directions['ra'], directions['dec']):
-            _.append(r)
-            _.append(d)
-    dir_dict = directions  # HACK this works but is not optimal
-    directions = _
+    directions, rad_ra_list, rad_dec_list = [], [], []
+    df = pd.read_csv(directions_file)
+    df.columns = map(str.lower, df.columns)
+    df['source_id'] = 'source_' + df['Source_id'].astype(str)
+    if 'units' in df.columns:
+        df = df.rename({'units': 'unit'}, axis='columns')  # either are fine
+    if 'unit' not in df.columns:
+        df['unit'] = 'radians'  # assume radians if no units given
+    for ra, dec, unit in zip(df['ra'], df['dec'], df['unit']):
+        if unit[:3].lower() == 'rad':
+            directions.append(ra)
+            directions.append(dec)
+            rad_ra_list.append(ra)
+            rad_dec_list.append(dec)
+        elif unit[:3].lower() == 'deg':
+            directions.append(ra * np.pi / 180)
+            directions.append(dec * np.pi / 180)
+            rad_ra_list.append(ra * np.pi / 180)
+            rad_dec_list.append(dec * np.pi / 180)
+        else:
+            raise NotImplementedError('Positions in {} must be in radians or '
+                                      'degrees'.format(directions_file))
+    dir_dict = {'ra': rad_ra_list, 'dec': rad_dec_list}
 
     make_blank_mtf(mtf=mtf)
     sources = []
@@ -2319,12 +2332,20 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
     for i, msout in enumerate(msouts):
         print('{}/{}: {}'.format(i + 1, len(msouts), msout))
 
+    print('Running loop 3 in {} directions on {} CPUs in'
+          'parallel'.format(len(parsets), cores))
+    processes = set()
+    for name in msouts:
+        processes.add(subprocess.Popen([loop3_script, name]))
+        if len(processes) >= cores:
+            os.wait()
+            processes.difference_update(
+                [p for p in processes if p.poll() is not None])
+    # check if all the child processes were closed
+    for p in processes:
+        if p.poll() is None:
+            p.wait()
 
-    # print('Running loop 3...')  # has to be run from the same directory as ms
-    # for msout in msouts:
-    #     cmd = ('python2 /data020/scratch/sean/letsgetloopy/lb-loop-2/' +
-    #            'loop3B_v1.py ' + msout)
-    #     os.system(cmd)
 
     # print('Then run combine_h5s (which puts the final loop 3 solutions in ' +
     #       'one HDF5) and update_list (which adds the incremental loop 3' +
