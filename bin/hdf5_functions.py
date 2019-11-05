@@ -1080,7 +1080,7 @@ def residual_tec_solve(ms, column_out='DATA', solint=5):
 
 
 def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False,
-                 time_step=4, freq_step=4, phase_center='',
+                 time_step=4, freq_step=4, phase_center='', column_in='DATA',
                  phase_up="{ST001:'CS*'}", filter_cmd="'!CS*&*'"):
     """Creates an NDPPP parset. Applies the output of make_h5parm to the
     measurement set.
@@ -1106,7 +1106,6 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False,
 
     # parset is saved in same directory as the h5parm
     parset = h5parm[:-2] + 'parset'
-    column_in = 'DATA'
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     msout = h5parm[:-2] + 'MS'
     # msout looks like /data/scratch/sean/direction_133.404_20.111.MS
@@ -2212,7 +2211,7 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
 
 
 def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
-         cores=4, directions=[], time_step=4, freq_step=4,
+         cores=4, directions=[], time_step=4, freq_step=4, column_in='DATA',
          phase_up="{ST001:'CS*'}", filter_cmd="'!CS*&*'"):
     """First, evaluate the h5parm phase solutions. Then for a given direction,
     make a new h5parm of acceptable solutions from the nearest direction for
@@ -2286,10 +2285,11 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
                                    dir_dict['dec']):
         # outputs an ms per direction
         # NOTE add averaging!
-        msout = apply_h5parm(h5parm=new_h5parm, col_out='DATA', ms=delaycal_ms, 
+        msout = apply_h5parm(h5parm=new_h5parm, col_out='DATA', ms=delaycal_ms,
                              time_step=time_step, freq_step=freq_step,
                              phase_center=[ra, dec], phase_up=phase_up,
                              filter_cmd=filter_cmd, tidy=False,
+                             column_in=column_in,
                              solutions=['phase', 'amplitude', 'tec'])
         msout_tec = msout  # TODO need a skymodel in residual_tec_solve to test
         # resid_tec_h5parm, msout_tec = residual_tec_solve(ms=msout)
