@@ -2240,15 +2240,17 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
     """
     ms_list = ast.literal_eval(calibrators_ms)
     cores = int(cores)
-directions, rad_ra_list, rad_dec_list = [], [], []
+    directions, rad_ra_list, rad_dec_list = [], [], []
 
-with open(directions_file) as csvfile:
-    reader = csv.DictReader(csvfile, skipinitialspace=True)
-    dir_dict = {name: [] for name in reader.fieldnames}
-    for row in reader:
-        for name in reader.fieldnames:
-            dir_dict[name].append(row[name])
-    dir_dict = dict((k.lower() if isinstance(k, basestring) else k, v.lower() if isinstance(v, basestring) else v) for k,v in dir_dict.iteritems())
+    with open(directions_file) as csvfile:
+        reader = csv.DictReader(csvfile, skipinitialspace=True)
+        dir_dict = {name: [] for name in reader.fieldnames}
+        for row in reader:
+            for name in reader.fieldnames:
+                dir_dict[name].append(row[name])
+    dir_dict = dict((k.lower() if isinstance(k, basestring) else k, v.lower()
+                    if isinstance(v, basestring) else v) for k, v in
+                    dir_dict.iteritems())
     if 'units' in dir_dict:
         dir_dict['unit'] = dir_dict.pop('units')
     if 'unit' not in dir_dict:
