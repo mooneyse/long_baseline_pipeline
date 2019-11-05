@@ -25,6 +25,7 @@ import pyrap.tables as pt
 
 __author__ = 'Sean Mooney'
 
+# TODO split into multiple scripts
 # TODO switch to interpolating LoSoTo solutions with NaN
 # TODO is there an easier way to add soltabs?
 # TODO remove repeated code, swap range(len()) to enumerate, etc
