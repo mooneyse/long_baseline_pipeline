@@ -713,7 +713,7 @@ def aplpy_plots( infits, docut=2.0, outpng='', nolabel=False,  crms=3.0, noshift
     #os.system('rm default.conv;rm default.sex;rm default.param;rm temp.fits')
 
 
-def main (vis,strategy='P30,P30,P30,A500,A450,A400',startmod='',ith=5.0,\
+def main (vis,strategy='P30,P30,A500,A450',startmod='',ith=5.0,\
           bandwidth='8MHz',goodness=2.,minuvw=50.0,robust=-1.0):
     ## format arguments
     strategy = str(strategy)
