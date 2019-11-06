@@ -776,7 +776,7 @@ def main (vis,strategy='P30,P30,P30,A500,A450,A400',startmod='',ith=5.0,\
         if thisstat < goodness:
             pstr = 'SNR is %f, breaking out of loop.'%thisstat
             loop3log( vis, pstr+'\n' )
-	    montage_plot( '*MFS-image.fits', imscale=0.65, nup='4x2', plot_resid=False)
+	        montage_plot( '*MFS-image.fits', imscale=0.65, nup='4x2', plot_resid=False)
             return(0)
         pstr='******* PHASE LOOP %d making mask %s_%02d%s-image.fits ********'%(iloop,vis,iloop,mfs)
         loop3log (vis, pstr+'\n')
@@ -833,7 +833,7 @@ def main (vis,strategy='P30,P30,P30,A500,A450,A400',startmod='',ith=5.0,\
         if thisstat < goodness:
             pstr = 'SNR is %f, breaking out of loop.'%thisstat
             loop3log( vis, pstr+'\n' )
-	    montage_plot( '*MFS-image.fits', imscale=0.65, nup='4x2', plot_resid=True)
+	        montage_plot( '*MFS-image.fits', imscale=0.65, nup='4x2', plot_resid=True)
             return(0)
         image_bdsf = '%s_%02d%s-image.fits'%(visA,iloop,mfs)
         pstr='******* AMPLITUDE LOOP %d making mask %s_%02d%s-image.fits ************'%(iloop,visA,iloop,mfs)
