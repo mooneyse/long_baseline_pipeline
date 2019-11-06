@@ -372,7 +372,11 @@ def make_montage( filelist, outname='', nup='4x2' ):
     os.chdir('../')
     os.system('rm -r montage_tmp' )
 
-def montage_plot( filepattern, imscale=0.65, nup='4x2', plot_resid=True):
+def montage_plot( filepattern, imscale=0.65, nup='4x2', plot_resid=True,
+                 dontplot=True):
+    if dontplot:
+        print('Skipping montage plotting')
+        return
     if filepattern.split('.')[-1] == 'fits':
 	filelist = sort_filelist(glob.glob(filepattern))
     else:
@@ -706,7 +710,7 @@ def aplpy_plots( infits, docut=2.0, outpng='', nolabel=False,  crms=3.0, noshift
     if outpng=='':
         outpng=infits.replace('fits','png')
     gc.save(outpng)
-    os.system('rm default.conv;rm default.sex;rm default.param;rm temp.fits')
+    #os.system('rm default.conv;rm default.sex;rm default.param;rm temp.fits')
 
 
 def main (vis,strategy='P30,P30,P30,A500,A450,A400',startmod='',ith=5.0,\
@@ -776,7 +780,7 @@ def main (vis,strategy='P30,P30,P30,A500,A450,A400',startmod='',ith=5.0,\
         if thisstat < goodness:
             pstr = 'SNR is %f, breaking out of loop.'%thisstat
             loop3log( vis, pstr+'\n' )
-            montage_plot( '*MFS-image.fits', imscale=0.65, nup='4x2', plot_resid=False)
+	    montage_plot( '*MFS-image.fits', imscale=0.65, nup='4x2', plot_resid=False)
             return(0)
         pstr='******* PHASE LOOP %d making mask %s_%02d%s-image.fits ********'%(iloop,vis,iloop,mfs)
         loop3log (vis, pstr+'\n')
@@ -833,7 +837,7 @@ def main (vis,strategy='P30,P30,P30,A500,A450,A400',startmod='',ith=5.0,\
         if thisstat < goodness:
             pstr = 'SNR is %f, breaking out of loop.'%thisstat
             loop3log( vis, pstr+'\n' )
-            montage_plot( '*MFS-image.fits', imscale=0.65, nup='4x2', plot_resid=True)
+	    montage_plot( '*MFS-image.fits', imscale=0.65, nup='4x2', plot_resid=True)
             return(0)
         image_bdsf = '%s_%02d%s-image.fits'%(visA,iloop,mfs)
         pstr='******* AMPLITUDE LOOP %d making mask %s_%02d%s-image.fits ************'%(iloop,visA,iloop,mfs)
@@ -897,7 +901,8 @@ def main (vis,strategy='P30,P30,P30,A500,A450,A400',startmod='',ith=5.0,\
     os.system('mv %s ../'%vis )
 
     print 'Output calibration tables',h5files
-    return pngfile,h5files
+    #return pngfile,h5files
+    return 0
 
 if __name__ == "__main__":
 
