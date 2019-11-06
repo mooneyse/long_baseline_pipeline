@@ -2407,7 +2407,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
 
     # for each of measurement sets that were made, run loop 3 on them in
     # parallel
-    print('Running loop 3 in {} directions on {} CPUs in'
+    print('Running loop 3 in {} directions on {} CPUs in '
           'parallel'.format(len(parsets), cores))
     processes = set()
     for name in msouts:
