@@ -2270,6 +2270,7 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
             directions.append(float(dec) * np.pi / 180)
             rad_ra_list.append(float(ra) * np.pi / 180)
             rad_dec_list.append(float(dec) * np.pi / 180)
+        else:
             raise NotImplementedError('Positions in {} must be in radians or '
                                       'degrees'.format(directions_file))
     dir_dict['ra'] = rad_ra_list
