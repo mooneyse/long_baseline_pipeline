@@ -25,6 +25,7 @@ import pyrap.tables as pt
 __author__ = 'Sean Mooney'
 
 # NOTE no pandas
+# TODO python 3 compatibility?
 # TODO split into multiple scripts
 # TODO switch to interpolating LoSoTo solutions with NaN
 # TODO is there an easier way to add soltabs?
@@ -259,9 +260,11 @@ def make_blank_mtf(mtf):
                   'CS301HBA0, CS301HBA1, CS302HBA0, CS302HBA1, '
                   'CS401HBA0, CS401HBA1, CS501HBA0, CS501HBA1\n')
     if not os.path.isfile(mtf):  # if it does not already exist
+        print('Creating the master text file {}'.format(mtf))
         with open(mtf, 'w+') as the_file:
             the_file.write(mtf_header)
-
+    else:
+        print('%s exists so it will not be created or overwritten' % mtf)
     return mtf
 
 
@@ -2227,30 +2230,89 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
     return rejigged_h5parm
 
 
-def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
-         cores=4, time_step=4, freq_step=4, column_in='DATA',
-         phase_up="{ST001:'CS*'}", filter_cmd="'!CS*&*'", suffix='.apply_tec',
-         loop3_script='./loop3B_v1.py',
+def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
+         mtf='mtf.txt', threshold=0.25, cores=4, time_step=4, freq_step=4,
+         loop3_script='./loop3B_v1.py', phase_up="{ST001:'CS*'}",
+         filter_cmd="'!CS*&*'", suffix='.apply_tec', column_in='DATA',
          directions_file='loop2_directions.csv'):
-    """First, evaluate the h5parm phase solutions. Then for a given direction,
+    """Run loop 2 of the LOFAR long-baseline pipeline, creating h5parms with
+    solutions for any given directions.
+
+    First, evaluate the h5parm phase solutions. Then for a given direction,
     make a new h5parm of acceptable solutions from the nearest direction for
     each station. Apply the solutions to the measurement set. Run loop 3 to
-    image the measurement set in the given direction. Updates the master text
-    file with the new best solutions after loop 3 is called.
+    image the measurement set in the given direction. Add the intiial solutions
+    to the incremental loop 3 solutions. Update the master text file with these
+    new best solutions.
+
+    Parameters
+    ----------
+    calibrators_ms : string or list
+        List of the calibrator measurement sets outputted by parallel_split.py.
+    delaycal_ms : str, optional
+        Filepath including wildcard of the LB-Delay-Calibrator.parset
+        concatenated measurement sets. The default is
+        `../L*_SB001_*_*_1*MHz.msdpppconcat`.
+    mtf : str, optional
+        Name of the master text file to be created. The default is `mtf.txt`.
+    threshold : float, optional
+        Threshold to determine goodness of solutions. The default is 0.25.
+    cores : int, optional
+        Number of CPUs available when executing steps in parallel. The default
+        is 4.
+    time_step : int, optional
+        Averaging step in time. For more see
+        https://www.astron.nl/lofarwiki/doku.php?id=public:user_software:documentation:ndppp#averager
+        The default is 4.
+    freq_step : int, optional
+        Averaging step in frequency. For more see
+        https://www.astron.nl/lofarwiki/doku.php?id=public:user_software:documentation:ndppp#averager
+        The default is 4.
+    loop3_script : str, optional
+        Location of the loop 3 script. The default is `./loop3B_v1.py`.
+    phase_up : str, optional
+        Stations to phase up. For more see
+        https://www.astron.nl/lofarwiki/doku.php?id=public:user_software:documentation:ndppp#stationadder
+        The default is `{ST001:'CS*'}` which adds the core stations to form
+        ST001.
+    filter_cmd : str, optional
+        Stations to filter. For more see
+        https://www.astron.nl/lofarwiki/doku.php?id=public:user_software:documentation:ndppp#filter
+        The default is `'!CS*&*'` which removes the core stations.
+    suffix : str, optional
+        String to locate measurement sets outputted by the apply_tec step in
+        the LB-Split-Calibrators.parset. The default is `.apply_tec`.
+    column_in : str, optional
+        Name of the column in the measurement set where the data are. The
+        default is `DATA`.
+    directions_file : str, optional
+        Filepath to the CSV containing the directions to create h5parms for.
+        The file should have a header with Source_id, RA, Dec, and Units.
+        Values should be comma separated. Units of radians or degrees are
+        allowed. The default is `loop2_directions.csv`.
+
+    Returns
+    -------
+    NoneType
+        Nothing is returned.
     """
-    ms_list = ast.literal_eval(calibrators_ms)
-    cores = int(cores)
+    # get the arguments passed to main() in the correct format for future use
+    ms_list = ast.literal_eval(str(calibrators_ms))  # eg ['cl1.ms', 'cl2.ms']
+    cores = int(cores)  # passed in as a string by default
     directions, rad_ra_list, rad_dec_list = [], [], []
 
+    # read the directions csv and get them into a dictionary and a list
     with open(directions_file) as csvfile:
         reader = csv.DictReader(csvfile, skipinitialspace=True)
         dir_dict = {name: [] for name in reader.fieldnames}
         for row in reader:
             for name in reader.fieldnames:
                 dir_dict[name].append(row[name])
-    dir_dict = dict((k.lower() if isinstance(k, basestring) else k, v.lower()
-                    if isinstance(v, basestring) else v) for k, v in
+    dir_dict = dict((k.lower() if isinstance(k, str) else k, v.lower()
+                    if isinstance(v, str) else v) for k, v in
                     dir_dict.iteritems())
+
+    # check if units are given in the directions file and assume radians if not
     if 'units' in dir_dict:
         dir_dict['unit'] = dir_dict.pop('units')
     if 'unit' not in dir_dict:
@@ -2276,13 +2338,14 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
     dir_dict['ra'] = rad_ra_list
     dir_dict['dec'] = rad_dec_list
 
-    make_blank_mtf(mtf=mtf)
+    make_blank_mtf(mtf=mtf)  # create the master text file if it does not exist
     sources = []
     for ms in ms_list:
         sources.append(ms.split('/')[-1][:-19])
-
     print('Found', len(ms_list), 'sources:', ', '.join(sources))
 
+    # for each calibrator source group the, phase, diagonal, and tec solutions
+    # in one h5parm, and evaluate the goodness of the phase solutions
     for i, (ms, source) in enumerate(zip(ms_list, sources)):
         phase_h5 = glob.glob(ms.replace(suffix, '.apply_tec_0*_c0.h5'))[0]
         amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
@@ -2300,7 +2363,8 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
 
         evaluate_solutions(h5parm=combined_h5, mtf=mtf, threshold=threshold)
 
-    new_h5parms = dir2phasesol_wrapper(mtf=mtf,
+    # create new h5parms with the nearest good solutions for each direction
+    new_h5parms = dir2phasesol_wrapper(mtf=mtf,  # this is run in parallel
                                        directions=directions,
                                        cores=cores)
 
@@ -2309,13 +2373,12 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
         coords_str = ', '.join(new_h5parm.split('/')[-1][:-3].split('_')[-2:])
         print('Direction {}: {}'.format(coords_str, new_h5parm))
 
+    # output a measurement set per direction that is shifted and averaged; do
+    # not execute the parset with ndppp when running apply_h5parm, just get the
+    # newly created parset, and then run the processes in parallel
     parsets, msouts = [], []
     for new_h5parm, ra, dec in zip(new_h5parms, dir_dict['ra'],
                                    dir_dict['dec']):
-        # outputs a measurement set per direction that is shifted and averaged
-        # we do not execute the parset with ndppp when running apply_h5parm,
-        # we just get the newly created parset, and then we run them in
-        # parallel
         parset, msout = apply_h5parm(h5parm=new_h5parm, col_out='DATA',
                                      ms=delaycal_ms,
                                      time_step=time_step, freq_step=freq_step,
@@ -2325,8 +2388,6 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
                                      solutions=['phase', 'amplitude', 'tec'])
         parsets.append(parset)
         msouts.append(msout)
-
-    # now execute the parsets in parallel
     print('Running NDPPP in {} directions on {} CPUs in'
           'parallel'.format(len(parsets), cores))
     processes = set()
@@ -2336,8 +2397,7 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
             os.wait()
             processes.difference_update(
                 [p for p in processes if p.poll() is not None])
-    # check if all the child processes were closed
-    for p in processes:
+    for p in processes:  # check if all the child processes were closed
         if p.poll() is None:
             p.wait()
 
@@ -2345,6 +2405,8 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
     for i, msout in enumerate(msouts):
         print('{}/{}: {}'.format(i + 1, len(msouts), msout))
 
+    # for each of measurement sets that were made, run loop 3 on them in
+    # parallel
     print('Running loop 3 in {} directions on {} CPUs in'
           'parallel'.format(len(parsets), cores))
     processes = set()
@@ -2354,16 +2416,17 @@ def main(calibrators_ms, delaycal_ms='', mtf='mtf.txt', threshold=0.25,
             os.wait()
             processes.difference_update(
                 [p for p in processes if p.poll() is not None])
-    # check if all the child processes were closed
-    for p in processes:
+    for p in processes:  # check if all the child processes were closed
         if p.poll() is None:
             p.wait()
 
+    # run combine_h5s again to put the loop 3 outputted solutions into one
+    # h5parm
 
-    # print('Then run combine_h5s (which puts the final loop 3 solutions in ' +
-    #       'one HDF5) and update_list (which adds the incremental loop 3' +
-    #       'solutions to the intial solutions, gets the HDF5 solution sets in' +
-    #       ' a format suitable for DDF, and re-evaluates the end result).')
+    # run update_list to add the incremental solutions from loop 3 to the
+    # initial solutions that were used; update_list calls evaluate_solutions to
+    # evaluate the goodness of these solutions that should be iteratively
+    # better
 
     # for msout, initial_h5parm in zip(msouts, new_h5parms):
     #     loop3_dir = (os.path.dirname(os.path.dirname(msout + '/')) +
