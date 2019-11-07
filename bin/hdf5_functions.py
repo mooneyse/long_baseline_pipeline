@@ -330,7 +330,6 @@ def evaluate_solutions(h5parm, mtf, threshold=0.25, verbose=False):
     print('Evaluating phase solutions in', h5parm)
     h = lh5.h5parm(h5parm)
     solname = h.getSolsetNames()[0]  # set to -1 to use only the last solset
-    print('got to here')
     solset = h.getSolset(solname)
     soltab = solset.getSoltab('phase000')
     stations = soltab.ant
@@ -2347,7 +2346,8 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     make_blank_mtf(mtf=mtf)  # create the master text file if it does not exist
     sources = []
     for ms in ms_list:
-        sources.append(ms.split('/')[-1][:-19])
+        if ms.split('/')[-1][:5] != 'loop3':
+            sources.append(ms.split('/')[-1][:-19])
     print('Found', len(ms_list), 'sources:', ', '.join(sources))
 
     # for each calibrator source group the, phase, diagonal, and tec solutions
