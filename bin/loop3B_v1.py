@@ -908,7 +908,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('vis', type=str, help='measurement set')
-    parser.add_argument('--strategy', default='P30,P30,P30,A500,A450,A400', type=str, help='strategy for loops (default:P30,P30,P30,A500,A450,A400)' )
+    parser.add_argument('--strategy', default='P30,P30,A500,A450', type=str, help='strategy for loops (default:P30,P30,P30,A500,A450,A400)' )
     parser.add_argument('--startmod', default='', type=str, help='starting model')
     parser.add_argument('--ith', default=5.0, type=float, help='threshold for pybdsf island detection, default 5.0')
     parser.add_argument('--bandwidth', default='8MHz', type=str, help='max bandwidth before breaking imaging into channels, default 8MHz')
