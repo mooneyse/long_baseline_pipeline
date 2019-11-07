@@ -2426,6 +2426,10 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
         if p.poll() is None:
             p.wait()
 
+    # NB put a check in here to see if loop3 finished successfully for all MS
+    # NB
+    # NB
+
     # run combine_h5s again to put the loop 3 outputted solutions into one
     # h5parm
     msouts_tec, parsets_tec = [], []
@@ -2437,8 +2441,8 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     print('Solving for residual TEC in {} directions on {} CPUs in '
           'parallel'.format(len(parsets_tec), cores))
     processes = set()
-    for name in msouts_tec:
-        processes.add(subprocess.Popen(['NDPPP', name]))
+    for parset in parsets_tec:
+        processes.add(subprocess.Popen(['NDPPP', parset]))
         if len(processes) >= cores:
             os.wait()
             processes.difference_update(
@@ -2449,6 +2453,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
 
     # put phase, amplitude and tec solutions for each direction into one h5parm
     print('Collecting incremental solutions for each direction')
+    combined_h5s = []
     for i, ms in enumerate(msouts_tec):
         phase_h5 = glob.glob(ms + '_*_c0.h5')[0]
         amplitude_h5 = glob.glob(ms + '_A_*_c0.h5')[0]
@@ -2463,6 +2468,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
         combined_h5 = combine_h5s(phase_h5=phase_h5,
                                   amplitude_h5=amplitude_h5,
                                   tec_h5=tec_h5)
+        combined_h5s.append(combined_h5)
 
     # run update_list to add the incremental solutions from loop 3 to the
     # initial solutions that were used; update_list calls evaluate_solutions to
