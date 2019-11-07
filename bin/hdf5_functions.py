@@ -1043,14 +1043,15 @@ def dir2phasesol(mtf, directions=[]):  # , ms=''
     return new_h5parm
 
 
-def residual_tec_solve(ms, column_out='DATA', solint=5):
+def residual_tec_solve(ms, column_out='DATA', solint=5, tidyup=False,
+                       runnow=True, sourcedb=''):
     """Solve for TEC using NDPPP.
 
     Write a parset to solve for the residual TEC in the measurement set
     using Gaincal, then execute the parset using NDPPP. For information on
     NDPPP, see this URL:
-    https://www.astron.nl/lofarwiki/doku.php?id=public:user_software:documentat
-    ion:ndppp. This step will be built into loop 3 instead.
+    https://www.astron.nl/lofarwiki/doku.php?id=public:user_software:documentation:ndppp#gaincal
+    This step will be built into loop 3 instead.
 
     Parameters
     ----------
@@ -1069,13 +1070,14 @@ def residual_tec_solve(ms, column_out='DATA', solint=5):
     string
         The HDF5 file containing the residual TEC solutions.
     """
-
-    parset = os.path.dirname(ms + '/') + '_residual_tec_solve.parset'
-    h5parm = parset[:-5] + 'h5'
-    msout = h5parm[:-2] + '_resid_tec.MS'
+    parset = os.path.dirname(ms + '/')[:-3] + '_tec.parset'
+    h5parm = parset[:-11] + '_tec_00_c0.h5'
+    msout = parset[:-11] + '_tec.MS'
     column_in = 'DATA'
+    if sourcedb == '':
+        sourcedb = ms + '_A_final-image.sky'
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print('residual_tec_solve running...')
+    print('Solving for residual TEC on {}'.format(ms))
     with open(parset, 'w') as f:  # create the parset
         f.write('# created by residual_tec_solve at {}\n\n'.format(now))
         f.write('msin                       = {}\n'.format(ms))
@@ -1088,11 +1090,13 @@ def residual_tec_solve(ms, column_out='DATA', solint=5):
         f.write('residual_tec.parmdb        = {}\n'.format(h5parm))
         f.write('residual_tec.applysolution = True\n')  # apply on the fly
         f.write('residual_tec.solint        = {}\n'.format(solint))
-
-    subprocess.check_output(['NDPPP', parset])
-    os.remove(parset)
-
-    return msout, h5parm
+        f.write('residual_tec.sourcedb      = {}\n'.format(sourcedb))
+    if runnow:
+        subprocess.check_output(['NDPPP', parset])
+        return msout, parset
+    if tidyup:
+        os.remove(parset)
+    return msout, parset
 
 
 def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False,
@@ -2422,20 +2426,53 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
 
     # run combine_h5s again to put the loop 3 outputted solutions into one
     # h5parm
+    msouts_tec, parsets_tec = [], []
+    for ms in msouts:
+        msout_tec, parset_tec = residual_tec_solve(ms=ms, runnow=False)
+        msouts_tec.append(msout_tec)
+        parsets_tec.append(parsets_tec)
+
+    print('Solving for residual TEC in {} directions on {} CPUs in '
+          'parallel'.format(len(parsets_tec), cores))
+    processes = set()
+    for name in msouts_tec:
+        processes.add(subprocess.Popen(['NDPPP', name]))
+        if len(processes) >= cores:
+            os.wait()
+            processes.difference_update(
+                [p for p in processes if p.poll() is not None])
+    for p in processes:  # check if all the child processes were closed
+        if p.poll() is None:
+            p.wait()
+
+    # put phase, amplitude and tec solutions for each direction into one h5parm
+    print('Collecting incremental solutions for each direction')
+    for i, ms in enumerate(msouts_tec):
+        phase_h5 = glob.glob(ms + '_*_c0.h5')[0]
+        amplitude_h5 = glob.glob(ms + '_A_*_c0.h5')[0]
+        tec_h5 = ms.replace(ms + '_tec_00_c0.h5')
+        coords = ', '.join(ms.split('_')[1:-1])
+        print('Direction {}/{}: {} degrees'.format(i + 1, len(msouts_tec),
+                                                   coords)
+        print(source, 'MS:', ms)
+        print(source, 'phase h5parm:', phase_h5)
+        print(source, 'amplitude h5parm:', amplitude_h5)
+        print(source, 'TEC h5parm:', tec_h5, '\n')
+
+        combined_h5 = combine_h5s(phase_h5=phase_h5,
+                                  amplitude_h5=amplitude_h5,
+                                  tec_h5=tec_h5)
 
     # run update_list to add the incremental solutions from loop 3 to the
     # initial solutions that were used; update_list calls evaluate_solutions to
-    # evaluate the goodness of these solutions that should be iteratively
-    # better
-
-    # for msout, initial_h5parm in zip(msouts, new_h5parms):
-    #     loop3_dir = (os.path.dirname(os.path.dirname(msout + '/')) +
-    #                  '/loop3_' + os.path.basename(msout)[:-3])
-    #     loop3_h5s = combine_h5s(loop3_dir=loop3_dir)
-    #     update_list(initial_h5parm=initial_h5parm,
-    #                 incremental_h5parm=loop3_h5s,
-    #                 mtf=mtf,
-    #                 threshold=threshold)
+    # evaluate the goodness of these solutions
+    for msout, increm_h5 in zip(msouts_tec, combined_h5s):
+        crd = ', '.join(msout.split('_')[1:-1])
+        print('Combining initial and incremental solutions for {}'.format(crd))
+        update_list(initial_h5parm=msout[:-7] + '.h5',
+                    incremental_h5parm=increm_h5,
+                    mtf=mtf,
+                    threshold=threshold)
 
 
 if __name__ == '__main__':
