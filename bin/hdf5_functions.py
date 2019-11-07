@@ -2368,8 +2368,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
                                   tec_h5=tec_h5)
 
         evaluate_solutions(h5parm=combined_h5, mtf=mtf, threshold=threshold)
-        print('one passed')
-    return
+
     # create new h5parms with the nearest good solutions for each direction
     new_h5parms = dir2phasesol_wrapper(mtf=mtf,  # this is run in parallel
                                        directions=directions,
