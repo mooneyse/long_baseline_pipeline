@@ -327,9 +327,10 @@ def evaluate_solutions(h5parm, mtf, threshold=0.25, verbose=False):
     Returns:
     The coherence metric for each station. (dict)
     """
-    print('Evalulating phase solutions in', h5parm)
+    print('Evaluating phase solutions in', h5parm)
     h = lh5.h5parm(h5parm)
     solname = h.getSolsetNames()[0]  # set to -1 to use only the last solset
+    print('got to here')
     solset = h.getSolset(solname)
     soltab = solset.getSoltab('phase000')
     stations = soltab.ant
@@ -347,7 +348,8 @@ def evaluate_solutions(h5parm, mtf, threshold=0.25, verbose=False):
         # try/except block facilitates one or many frequency axes in the hdf5
         try:  # if there are multiple frequency axes
             cohs = []
-            num_solns, num_freqs = xx.shape  # this unpack will fail if there is only one frequency axis
+            # this unpack will fail if there is only one frequency axis
+            num_solns, num_freqs = xx.shape
             for i in range(num_freqs):
                 cohs.append(coherence_metric(xx[:, i], yy[:, i]))
 
@@ -2366,7 +2368,8 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
                                   tec_h5=tec_h5)
 
         evaluate_solutions(h5parm=combined_h5, mtf=mtf, threshold=threshold)
-
+        print('one passed')
+    return
     # create new h5parms with the nearest good solutions for each direction
     new_h5parms = dir2phasesol_wrapper(mtf=mtf,  # this is run in parallel
                                        directions=directions,
