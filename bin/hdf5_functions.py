@@ -2437,7 +2437,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
         msout_tec, parset_tec = residual_tec_solve(ms=ms, runnow=False)
         msouts_tec.append(msout_tec)
         parsets_tec.append(parsets_tec)
-
+    print(parsets_tec, 'lllllllllllllllllllllllllllll')
     print('Solving for residual TEC in {} directions on {} CPUs in '
           'parallel'.format(len(parsets_tec), cores))
     processes = set()
