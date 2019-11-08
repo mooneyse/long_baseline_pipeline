@@ -1200,7 +1200,7 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False,
     if execute:
         subprocess.check_output(['NDPPP', parset])
     else:
-        return parset, msout
+        return msout, parset
     if tidy:
         print('Deleting the parset.')
         os.remove(parset)
@@ -2442,7 +2442,9 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
           'parallel'.format(len(parsets_tec), cores))
     processes = set()
     for parset in parsets_tec:
-        processes.add(subprocess.Popen(['NDPPP', parset]))
+        print('--------------------------------------------------------------')
+        print('NDPPP', parset)
+        processes.add(subprocess.Popen(['NDPPP', str(parset])))
         if len(processes) >= cores:
             os.wait()
             processes.difference_update(
