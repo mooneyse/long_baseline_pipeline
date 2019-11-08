@@ -2385,7 +2385,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     parsets, msouts = [], []
     for new_h5parm, ra, dec in zip(new_h5parms, dir_dict['ra'],
                                    dir_dict['dec']):
-        parset, msout = apply_h5parm(h5parm=new_h5parm, col_out='DATA',
+        msout, parset = apply_h5parm(h5parm=new_h5parm, col_out='DATA',
                                      ms=delaycal_ms,
                                      time_step=time_step, freq_step=freq_step,
                                      phase_center=[ra, dec], phase_up=phase_up,
