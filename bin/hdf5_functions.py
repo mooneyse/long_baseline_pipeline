@@ -1097,6 +1097,7 @@ def residual_tec_solve(ms, column_out='DATA', solint=5, tidyup=False,
         return msout, parset
     if tidyup:
         os.remove(parset)
+    print('MS out is:', msout, 'and parset is', parset, 'all ok?')
     return msout, parset
 
 
@@ -2426,18 +2427,18 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
         if p.poll() is None:
             p.wait()
 
-    # NB put a check in here to see if loop3 finished successfully for all MS
-    # NB
-    # NB
-
     # run combine_h5s again to put the loop 3 outputted solutions into one
     # h5parm
     msouts_tec, parsets_tec = [], []
     for ms in msouts:
-        msout_tec, parset_tec = residual_tec_solve(ms=ms, runnow=False)
-        msouts_tec.append(msout_tec)
-        parsets_tec.append(parsets_tec)
-    print(parsets_tec, 'lllllllllllllllllllllllllllll')
+        # NB check if loop 3 succeeded by checking the existence of the ms
+        if os.path.exists(ms):
+            msout_tec, parset_tec = residual_tec_solve(ms=ms, runnow=False)
+            msouts_tec.append(msout_tec)
+            parsets_tec.append(parsets_tec)
+        else:
+            print('Cannot find {} -  maybe loop 3 failed'.format(ms))
+
     print('Solving for residual TEC in {} directions on {} CPUs in '
           'parallel'.format(len(parsets_tec), cores))
     processes = set()
