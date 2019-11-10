@@ -2433,27 +2433,25 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     for ms in msouts:
         # NB check if loop 3 succeeded by checking the existence of the ms
         if os.path.exists(ms):
-            msout_tec, parset_tec = residual_tec_solve(ms=ms, runnow=False)
+            # msout_tec, parset_tec = residual_tec_solve(ms=ms, runnow=False)
+            msout_tec, parset_tec = residual_tec_solve(ms=ms, runnow=True)
             msouts_tec.append(msout_tec)
             parsets_tec.append(parsets_tec)
         else:
             print('Cannot find {} -  maybe loop 3 failed'.format(ms))
 
-    print('Solving for residual TEC in {} directions on {} CPUs in '
-          'parallel'.format(len(parsets_tec), cores))
-    processes = set()
-    for parset in parsets_tec:
-        print('--------------------------------------------------------------')
-        print('NDPPP', parset)
-        print('parset type', type(parset), type(parsets_tec))
-        processes.add(subprocess.Popen(['NDPPP', parset]))
-        if len(processes) >= cores:
-            os.wait()
-            processes.difference_update(
-                [p for p in processes if p.poll() is not None])
-    for p in processes:  # check if all the child processes were closed
-        if p.poll() is None:
-            p.wait()
+    # print('Solving for residual TEC in {} directions on {} CPUs in '
+    #       'parallel'.format(len(parsets_tec), cores))
+    # processes = set()
+    # for parset in parsets_tec:
+    #     processes.add(subprocess.Popen(['NDPPP', parset]))
+    #     if len(processes) >= cores:
+    #         os.wait()
+    #         processes.difference_update(
+    #             [p for p in processes if p.poll() is not None])
+    # for p in processes:  # check if all the child processes were closed
+    #     if p.poll() is None:
+    #         p.wait()
 
     # put phase, amplitude and tec solutions for each direction into one h5parm
     print('Collecting incremental solutions for each direction')
