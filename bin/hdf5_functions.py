@@ -2445,6 +2445,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     print('Full list looks like this:', msouts_tec, type(msouts_tec))
     try:
         print('and len if a list:', len(msouts_tec))
+        print('And parsets! dont forget them!', type(parsets), parsets)
     except:
         pass
     # print('Solving for residual TEC in {} directions on {} CPUs in '
@@ -2465,9 +2466,9 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     combined_h5s = []
     for i, ms in enumerate(msouts_tec):
         print('MS with TEC:', msouts_tec)
-        phase_h5 = glob.glob(ms + '_*_c0.h5')[0]
-        amplitude_h5 = glob.glob(ms + '_A_*_c0.h5')[0]
-        tec_h5 = ms.replace('_tec.MS', '_tec_00_c0.h5')
+        phase_h5 = glob.glob(ms[:-7] + '.MS_??_c0.h5')[0]
+        amplitude_h5 = glob.glob(ms[:-7] + '_A_??_c0.h5')[0]
+        tec_h5 = ms.replace('.MS', '_00_c0.h5')
         dg = ', '.join(ms.split('_')[1:-1])
         print('Direction {}/{}: {} degrees'.format(i + 1, len(msouts_tec), dg))
         print(source, 'MS:', ms)
