@@ -1,7 +1,7 @@
 ! long_baseline_pipeline_dir = /data5/sean/LC12_022/software/my_long_baseline_pipeline/long_baseline_pipeline
 ! job_directory              = input.output.job_directory
 ! num_proc_per_node          = input.output.max_per_node
-! scripts			 	             = {{ long_baseline_pipeline_dir }}/bin
+! scripts                    = {{ long_baseline_pipeline_dir }}/bin
 ! lb_delaycal_directory      = {{ job_directory }}/../LB-Delay-Calibration/
 ! cal_shift_avg_timestep     = 4
 ! cal_shift_avg_freqstep     = 4
@@ -32,12 +32,12 @@ targetdata_map_list.control.filename    = combine_data_tar_map.mapfile
 targetdata_map_list.control.mapfile_in  = targetdata_map.output.mapfile
 
 # run loop2
-loop2.control.type		   	     = pythonplugin
+loop2.control.type             = pythonplugin
 loop2.control.max_per_node     = {{ num_proc_per_node }}
-loop2.control.executable	     = {{ scripts }}/hdf5_functions.py
-loop2.argument.flags		       = [targetdata_map_list.output.mapfile]
+loop2.control.executable       = {{ scripts }}/hdf5_functions.py
+loop2.argument.flags           = [targetdata_map_list.output.mapfile]
 loop2.argument.delaycal_ms     = {{ lb_delaycal_directory }}/L723586_SB001_DE609_removed_12E068069t_130MHz.msdpppconcat
-loop2.argument.mtf		         = {{ job_directory }}/mtf.txt
+loop2.argument.mtf             = {{ job_directory }}/mtf.txt
 loop2.argument.threshold       = 0.25
 loop2.argument.time_step       = {{ cal_shift_avg_timestep }}
 loop2.argument.freq_step       = {{ cal_shift_avg_freqstep }}
