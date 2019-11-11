@@ -2400,7 +2400,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
           'parallel'.format(len(parsets), cores))
     processes = set()
     for name in parsets:
-        processes.add(subprocess.Popen(['NDPPP', name]))
+        processes.add(subprocess.Popen(['NDPPP', '--help']))  # NB NB NB name
         if len(processes) >= cores:
             os.wait()
             processes.difference_update(
