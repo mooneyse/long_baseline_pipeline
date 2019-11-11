@@ -26,28 +26,25 @@ __author__ = 'Sean Mooney'
 
 # TODO python 3 compatibility?
 # TODO switch to interpolating LoSoTo solutions with NaN
-# TODO is there an easier way to add soltabs?
 # TODO refactor code
-# TODO tidy docstrings (numpydoc docstring format ideally, e.g. see
-#      residual_tec_solve)
-# TODO change print commands to logging commands
+# TODO tidy docstrings (numpydoc docstring format; e.g. see residual_tec_solve)
+# TODO use logging module instead of print
 # TODO only uses default loop 3 parameters
+# TODO put back in resiudal tec parallelisation
+# TODO add a function to output a ds9 region file marking the directions
+# TODO plot the h5parms with losoto
+# TODO benchmark loop 2 and improve increase the performance
+# TODO where we have makeSoltab, write to the history how it is created, giving
+#      the direction that the solutions for each station came from. This is in
+#      make_h5parm_{ra}_{dec}.txt already.
+
+
 # TODO https://github.com/mooneyse/lb-loop-2/issues/11
 # TODO https://github.com/mooneyse/lb-loop-2/issues/10
 # TODO https://github.com/mooneyse/lb-loop-2/issues/9
 # TODO https://github.com/mooneyse/lb-loop-2/issues/6
 # TODO https://github.com/mooneyse/lb-loop-2/issues/5
-# TODO add a function to output something like this:
-#      https://i.imgur.com/G0BZktL.png
-# TODO possibly change the directions to be read in as a dictionary
-# TODO check that the documentation for each function has the right format and
-#      parameters
-# TODO read in a text file called directions.txt instead of a dictionary,
-#      ideally giving the option, and let the directions be in degrees,
-#      radians, or sexagesimals.
-# TODO plot the h5parms with losoto
-# TODO time how long loop 2 takes and see if there are ways to increase the
-#      performance. apply_tec should run in parallel.
+
 
 
 def dir_from_ms(ms, verbose=False):
@@ -1263,7 +1260,8 @@ def add_amplitude_and_phase_solutions(diag_A_1, diag_P_1, diag_A_2, diag_P_2):
 
         for i in range(diag_A_1.shape[1]):
             amplitude_1_2, phase_1_2 = [], []
-
+            print('----------------------------------------------------------')
+            print(diag_A_1.shape, diag_P_1.shape, diag_A_2.shape, diag_P_2.shape)
             for A1, P1, A2, P2 in zip(diag_A_1[:, i], diag_P_1[:, i],
                                       diag_A_2[:, i], diag_P_2[:, i]):
                 complex_1 = A1 * complex(np.cos(P1), np.sin(P1))
