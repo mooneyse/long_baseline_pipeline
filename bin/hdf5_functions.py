@@ -102,20 +102,20 @@ def make_ds9_region_file(dir_dict, ds9_region_file='directions.reg',
             cDEC.append(dec)
             cUNIT.append('radians')
 
-         with open(ds9_region_file, 'a+') as the_file:
-             for ra, dec, unit in zip(cRA, cDEC, cUNIT):
-                 if unit[:3] == 'rad':  # convert to degrees
-                     ra = ra * 180 / np.pi
-                     dec = dec * 180 / np.pi
-                     unit = 'degrees'
-                 RA = str(ra)
-                 ra = str(np.round(ra, 3))
-                 DEC = str(dec)
-                 dec = str(np.round(dec, 3))
-                 radius = str(radius)
-                 the_file.write('circle(' + RA + unit[0] + ',' + DEC + unit[0] +
-                                ',' + radius + '") # width=2 color=cyan text'
-                                '={cal ' + ra + ', ' + dec + '}\n')
+        with open(ds9_region_file, 'a+') as the_file:
+            for ra, dec, unit in zip(cRA, cDEC, cUNIT):
+                if unit[:3] == 'rad':  # convert to degrees
+                    ra = ra * 180 / np.pi
+                    dec = dec * 180 / np.pi
+                    unit = 'degrees'
+                RA = str(ra)
+                ra = str(np.round(ra, 3))
+                DEC = str(dec)
+                dec = str(np.round(dec, 3))
+                radius = str(radius)
+                the_file.write('circle(' + RA + unit[0] + ',' + DEC + unit[0] +
+                               ',' + radius + '") # width=2 color=cyan text'
+                               '={cal ' + ra + ', ' + dec + '}\n')
 
 
 def dir_from_ms(ms, verbose=False):
