@@ -1275,6 +1275,10 @@ def add_amplitude_and_phase_solutions(diag_A_1, diag_P_1, diag_A_2, diag_P_2):
                                                 complex_1_2.real))
             except:
                 print('This is a hack! Fix it ASAP, it is wrong')  # NB
+                '''This gets an index error because the diag_A/P_1 have 6 freq
+                axes and diag_A/P_2 have 1 freq axis so defining i as the range
+                for diag_A/P_1 gives i up to 6, and at i == 2 i have line 1267
+                saying diag_A_2[:,i] with i = 2, but i is 1 max! so it fails'''
                 for A1, P1, A2, P2 in zip(diag_A_1[:, 0], diag_P_1[:, 0],
                                           diag_A_2[:, 0], diag_P_2[:, 0]):
                     complex_1 = A1 * complex(np.cos(P1), np.sin(P1))
