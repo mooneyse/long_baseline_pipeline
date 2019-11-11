@@ -2467,7 +2467,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     for i, ms in enumerate(msouts_tec):
         print('MS with TEC:', msouts_tec)
         phase_h5 = glob.glob(ms[:-7] + '.MS_??_c0.h5')[0]
-        amplitude_h5 = glob.glob(ms[:-7] + '_A_??_c0.h5')[0]
+        amplitude_h5 = glob.glob(ms[:-7] + '.MS_A_??_c0.h5')[0]
         tec_h5 = ms.replace('.MS', '_00_c0.h5')
         dg = ', '.join(ms.split('_')[1:-1])
         print('Direction {}/{}: {} degrees'.format(i + 1, len(msouts_tec), dg))
