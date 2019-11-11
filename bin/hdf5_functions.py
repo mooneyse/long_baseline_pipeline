@@ -24,6 +24,7 @@ import pyrap.tables as pt
 
 __author__ = 'Sean Mooney'
 
+# TODO run loop 2 on someone else's field
 # TODO python 3 compatibility?
 # TODO switch to interpolating LoSoTo solutions with NaN
 # TODO refactor code
