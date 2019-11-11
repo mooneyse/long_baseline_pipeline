@@ -2469,8 +2469,8 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
         phase_h5 = glob.glob(ms[:-7] + '.MS_??_c0.h5')[0]
         amplitude_h5 = glob.glob(ms[:-7] + '.MS_A_??_c0.h5')[0]
         tec_h5 = ms.replace('.MS', '_00_c0.h5')
-        dg = ', '.join(ms.split('_')[1:-1])
-        print('Direction {}/{}: {} degrees'.format(i + 1, len(msouts_tec), dg))
+        # dg = ', '.join(ms.split('_')[1:-1])
+        print('Direction {}/{}')  # {} deg'.format(i + 1, len(msouts_tec), dg))
         print(source, 'MS:', ms)
         print(source, 'phase h5parm:', phase_h5)
         print(source, 'amplitude h5parm:', amplitude_h5)
@@ -2484,13 +2484,18 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     # run update_list to add the incremental solutions from loop 3 to the
     # initial solutions that were used; update_list calls evaluate_solutions to
     # evaluate the goodness of these solutions
-    for msout, increm_h5 in zip(msouts_tec, combined_h5s):
+    print('Updating the list')
+    print('msouts_tec:', msouts_tec)
+    print('combined_h5s:', combined_h5s)
+    for msout, increm_h5 in zip(msouts, combined_h5s):
         # crd = ', '.join(msout.split('_')[-3:-1])
         # print('Combining initial and incremental solutions for {}'.format(crd))
-        update_list(initial_h5parm=msout[:-7] + '.h5',
+        update_list(initial_h5parm=msout[:-2] + 'h5',
                     incremental_h5parm=increm_h5,
                     mtf=mtf,
                     threshold=threshold)
+        print('one done!')
+    print('Loop 2 is done')
 
 
 if __name__ == '__main__':
