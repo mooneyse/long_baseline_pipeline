@@ -1261,16 +1261,29 @@ def add_amplitude_and_phase_solutions(diag_A_1, diag_P_1, diag_A_2, diag_P_2):
         for i in range(diag_A_1.shape[1]):
             amplitude_1_2, phase_1_2 = [], []
             print('----------------------------------------------------------')
-            print(diag_A_1.shape, diag_P_1.shape, diag_A_2.shape, diag_P_2.shape)
-            for A1, P1, A2, P2 in zip(diag_A_1[:, i], diag_P_1[:, i],
-                                      diag_A_2[:, i], diag_P_2[:, i]):
-                complex_1 = A1 * complex(np.cos(P1), np.sin(P1))
-                complex_2 = A2 * complex(np.cos(P2), np.sin(P2))
-                complex_1_2 = complex_1 + complex_2
+            print(diag_A_1.shape, diag_P_1.shape,
+                  diag_A_2.shape, diag_P_2.shape)
+            try:
+                for A1, P1, A2, P2 in zip(diag_A_1[:, i], diag_P_1[:, i],
+                                          diag_A_2[:, i], diag_P_2[:, i]):
+                    complex_1 = A1 * complex(np.cos(P1), np.sin(P1))
+                    complex_2 = A2 * complex(np.cos(P2), np.sin(P2))
+                    complex_1_2 = complex_1 + complex_2
 
-                amplitude_1_2.append(abs(complex_1_2))
-                phase_1_2.append(np.arctan2(complex_1_2.imag,
-                                            complex_1_2.real))
+                    amplitude_1_2.append(abs(complex_1_2))
+                    phase_1_2.append(np.arctan2(complex_1_2.imag,
+                                                complex_1_2.real))
+            except:
+                print('This is a hack! Fix it ASAP, it is wrong')  # NB
+                for A1, P1, A2, P2 in zip(diag_A_1[:, 0], diag_P_1[:, 0],
+                                          diag_A_2[:, 0], diag_P_2[:, 0]):
+                    complex_1 = A1 * complex(np.cos(P1), np.sin(P1))
+                    complex_2 = A2 * complex(np.cos(P2), np.sin(P2))
+                    complex_1_2 = complex_1 + complex_2
+
+                    amplitude_1_2.append(abs(complex_1_2))
+                    phase_1_2.append(np.arctan2(complex_1_2.imag,
+                                                complex_1_2.real))
 
             amplitude_final[:, i] = amplitude_1_2
             phase_final[:, i] = phase_1_2
