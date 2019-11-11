@@ -37,14 +37,23 @@ __author__ = 'Sean Mooney'
 # TODO where we have makeSoltab, write to the history how it is created, giving
 #      the direction that the solutions for each station came from. This is in
 #      make_h5parm_{ra}_{dec}.txt already.
-
-
-# TODO https://github.com/mooneyse/lb-loop-2/issues/11
-# TODO https://github.com/mooneyse/lb-loop-2/issues/10
-# TODO https://github.com/mooneyse/lb-loop-2/issues/9
-# TODO https://github.com/mooneyse/lb-loop-2/issues/6
-# TODO https://github.com/mooneyse/lb-loop-2/issues/5
-
+# TODO Some time axes come out with 1029 timesteps after interpolation and when
+#      matched this other time axes. Is this correct? It looks suspiciously
+#      like one was added by mistake but it might be to do with the fact that
+#      not all time axes in solution tables are the same. Check it out.
+# TODO fix the big error on line 1277!
+# TODO ensure all hdf5s use the same reference station! It is critical that all
+#      HDF5s use the same reference station. Otherwise, taking solutions for
+#      different stations from different HDF5s would be incorrect. So a check
+#      needs to be introduced for this (by seeing which station has solutions
+#      of zero), where it raises an error if it is not the case. Better still,
+#      write a function which converts the solutions from one reference station
+#      to another, and do this if necessary. (First, make sure the new station
+#      we are using as the reference is present in all HDF5s.)
+# TODO Do we use WEIGHT_SPECTRUM or WEIGHT? And does it make sense to include
+#      this while adding things (not averaging)? e.g. When combining weights,
+#      should I take their intersection or average? When adding data, what role
+#      should the weights play?
 
 
 def dir_from_ms(ms, verbose=False):
