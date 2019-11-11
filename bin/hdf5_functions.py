@@ -109,9 +109,9 @@ def make_ds9_region_file(dir_dict, ds9_region_file='directions.reg',
                     dec = dec * 180 / np.pi
                     unit = 'degrees'
                 RA = str(ra)
-                ra = str(np.round(ra, 3))
+                ra = '{:.3f}'.format(ra))
                 DEC = str(dec)
-                dec = str(np.round(dec, 3))
+                dec = '{:.3f}'.format(dec))
                 radius = str(radius)
                 the_file.write('circle(' + RA + unit[0] + ',' + DEC + unit[0] +
                                ',' + radius + '") # width=2 color=cyan text'
