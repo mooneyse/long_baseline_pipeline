@@ -2430,8 +2430,8 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     dir_dict['dec'] = rad_dec_list
 
     make_ds9_region_file(dir_dict=dir_dict,  # includes calibrators, directions
-                         ds9_region_file=(os.path.dirname(mtf) +
-                                          '/direcitons.reg'))
+                         ds9_region_file=(os.path.dirname(os.path.dirname(mtf +
+                                          '/') + '/direcitons.reg'))
     make_blank_mtf(mtf=mtf)  # create the master text file if it does not exist
     sources = []
     for ms in ms_list:
