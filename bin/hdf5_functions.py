@@ -2489,7 +2489,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     print('combined_h5s:', combined_h5s)
     for msout, increm_h5 in zip(msouts, combined_h5s):
         # crd = ', '.join(msout.split('_')[-3:-1])
-        # print('Combining initial and incremental solutions for {}'.format(crd))
+        # print('Combining initial + incremental solutions for {}'.format(crd))
         update_list(initial_h5parm=msout[:-2] + 'h5',
                     incremental_h5parm=increm_h5,
                     mtf=mtf,
