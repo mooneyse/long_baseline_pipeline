@@ -41,7 +41,7 @@ __author__ = 'Sean Mooney'
 #      matched this other time axes. Is this correct? It looks suspiciously
 #      like one was added by mistake but it might be to do with the fact that
 #      not all time axes in solution tables are the same. Check it out.
-# TODO fix the big error on line 1277!
+# TODO fix the big error on line 1277 and remove debugging print statements
 # TODO ensure all hdf5s use the same reference station! It is critical that all
 #      HDF5s use the same reference station. Otherwise, taking solutions for
 #      different stations from different HDF5s would be incorrect. So a check
