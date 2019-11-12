@@ -1321,6 +1321,8 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False,
     -------
     string
         The name of the new measurement set.
+    string
+        Optionally return the name of the parset too, if execute is False.
     """
 
     # parset is saved in same directory as the h5parm
