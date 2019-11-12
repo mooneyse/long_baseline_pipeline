@@ -55,10 +55,6 @@ __author__ = 'Sean Mooney'
 #      this while adding things (not averaging)? e.g. When combining weights,
 #      should I take their intersection or average? When adding data, what role
 #      should the weights play?
-#      2019-11-12 00:01:26 DEBUG   genericpipeline.executable_args: Converted TEC to phase and added it to phase.
-#      2019-11-12 00:01:26 WARNING genericpipeline.executable_args: 2019-11-12 00:01:26 - INFO: ^[[32mSoltab "tec000" deleted.^[[0m
-#      2019-11-12 00:01:26 WARNING genericpipeline.executable_args: 2019-11-12 00:01:26 - INFO: ^[[32mSoltab "phase000" deleted.^[[0m
-#      2019-11-12 00:01:26 WARNING genericpipeline.executable_args: 2019-11-12 00:01:26 - INFO: ^[[32mSoltab "phase001000" renamed to "phase000".^[[0m
 
 
 def make_ds9_region_file(dir_dict, ds9_region_file='directions.reg',
@@ -1769,7 +1765,7 @@ def rejig_solsets(h5parm, is_tec=True, add_tec_to_phase=False):
         # NOTE so much repeated code here...
 
         # write new tec + phase solutions to the solution set
-        phase_sum = sol000.makeSoltab('phase001',
+        phase_sum = sol000.makeSoltab('newphase',
                                       axesNames=['time', 'freq', 'ant', 'pol',
                                                  'dir'],
                                       axesVals=[time_new, phase.freq,
