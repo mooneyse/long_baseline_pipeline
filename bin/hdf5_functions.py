@@ -783,9 +783,6 @@ def dir2phasesol(mtf, directions=[]):
     ----------
     mtf : string
         Master text file with list of h5parms.
-    ms : string, optional
-        Measurement set to be self-calibrated, used for getting a sensible name
-        for the new HDF5. The default is ``.
     directions : list, optional
         Right ascension and declination of one source in radians. The default
         is [].
@@ -1208,10 +1205,6 @@ def dir2phasesol(mtf, directions=[]):
     tec_antenna = tec_solset.obj._f_get_child('antenna')
     tec_antenna.append(antenna_soltab.items())  # from dictionary to list
 
-    # except:
-    #     print('No TEC solutions found.')
-    #     pass
-
     h.close()  # close the new h5parm
     os.remove(working_file)
     return new_h5parm
@@ -1236,6 +1229,14 @@ def residual_tec_solve(ms, column_out='DATA', solint=5, tidyup=False,
         to (the default is DATA).
     solint : float, optional
         Solution interval in seconds for the TEC solve (the default is 5).
+    tidyup : boolean, optional
+        Whether to remove files at the end. The default is False.
+    runnow : boolean, optional
+        Whether to run the code now or just return the parset. The default is
+        True.
+    sourcedb : string, optional
+        The name of the source model in sourcedb format. The default is ``, in
+        which case it will look for the sky model outputted from loop 3.
 
     Returns
     -------
@@ -1288,12 +1289,33 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False,
         The output of dir2phasesol.
     ms : string
         The measurement set for self-calibration.
-    column_out : string (default = 'DATA')
-        The column NDPPP writes to.
-    solutions : string (default = 'phase')
+    column_out : string, optional
+        The column NDPPP writes to. The default is `DATA`.
+    solutions : string, optional
         Which solutions to apply. For both phase and amplitude, pass ['phase',
         'amplitude'] (where it assumes phase solutions are in sol000 and the
-        amplitude/phase diagonal solutions are in sol001).
+        amplitude/phase diagonal solutions are in sol001). The default is
+        [`phase`].
+    tidy : boolean, optional
+        Whether to tidy up afterwards by deleting the parset. The default is
+        False.
+    time_step : float or int, optional
+        The averaging time step. The default is 4.
+    freq_step : float or int, optional
+        The averaging frequency step. The default is 4.
+    phase_center : string, optional
+        The phase centre to shift to. The default is ``.
+    column_in : string, optional
+        The name of the column to use. The default is `DATA`.
+    phase_up : string, optional
+        The phase up command to use with NDPPP. The default is `{ST001:'CS*'}`.
+        This phases the core stations up to ST001.
+    filter_cmd : string, optional
+        The filter command to use with NDPPP. The default is `'!CS*&*'`. This
+        removes the core stations after phasing them up.
+    execute : boolean, optional
+        Whether to run NDPPP with the parset or just to make it and return it.
+        The default is True, so it is executed.
 
     Returns
     -------
