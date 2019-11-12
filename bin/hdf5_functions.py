@@ -2473,10 +2473,10 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     # check if units are given in the directions file and assume radians if not
     if 'units' in dir_dict:
         dir_dict['unit'] = dir_dict.pop('units')
+    rads = []
+    for r in range(len(dir_dict['ra'])):
+        rads.append('radians')
     if 'unit' not in dir_dict:
-        rads = []
-        for r in range(len(dir_dict['ra'])):
-            rads.append('radians')
         dir_dict['unit'] = rads   # assume radians if no units given
     for ra, dec, unit in zip(dir_dict['ra'], dir_dict['dec'],
                              dir_dict['unit']):
@@ -2495,6 +2495,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
                                       'degrees'.format(directions_file))
     dir_dict['ra'] = rad_ra_list
     dir_dict['dec'] = rad_dec_list
+    dir_dict['unit'] = rads
 
     make_ds9_region_file(dir_dict=dir_dict,  # includes calibrators, directions
                          ds9_region_file=(os.path.dirname(os.path.dirname(mtf +
