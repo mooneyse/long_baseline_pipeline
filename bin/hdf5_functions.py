@@ -24,6 +24,9 @@ import pyrap.tables as pt
 
 __author__ = 'Sean Mooney'
 
+# TODO ds9 region file gets ra, dec from apply_tec ms using pointing centre
+#      with taql but this gives the original pointing centre so trying it a
+#      different way with pyrap.tables
 # TODO run loop 2 on someone else's field
 # TODO python 3 compatibility?
 # TODO switch to interpolating LoSoTo solutions with NaN
@@ -56,6 +59,7 @@ __author__ = 'Sean Mooney'
 #      this while adding things (not averaging)? e.g. When combining weights,
 #      should I take their intersection or average? When adding data, what role
 #      should the weights play?
+# TODO remove residual TEC step, but first figure out why it is bad
 
 
 def make_ds9_region_file(dir_dict, ds9_region_file='directions.reg',
@@ -117,8 +121,9 @@ def make_ds9_region_file(dir_dict, ds9_region_file='directions.reg',
         cRA, cDEC, cUNIT = [], [], []
         for cal in cals:
             cal = cal.replace('loop3_', '')
-            taql_cmd = 'select DIRECTION from {}/POINTING limit 1'.format(cal)
-            ra, dec = pt.taql(taql_cmd)[0]['DIRECTION'].flatten()
+            # taqlcmd = 'select DIRECTION from {}/POINTING limit 1'.format(cal)
+            # ra, dec = pt.taql(taqlcmd)[0]['DIRECTION'].flatten()
+            ra, dec = dir_from_ms(cal)
             cRA.append(ra)
             cDEC.append(dec)
             cUNIT.append('radians')
@@ -527,24 +532,19 @@ def dir2phasesol_wrapper(mtf, directions=[], cores=4):
     directions : list or NumPy array, optional
         Directions in radians in the form RA1, Dec1, RA2, Dec2, etc. The
         default is [].
-    cores : float or integer
+    cores : float or integer, optional
         Number of cores to use. The default is 4.
 
     Returns
     -------
-    The names of the newly created h5parms in the directions specified. (list)
+    list
+        The names of the newly created h5parms in the directions specified.
     """
-
-    # if not directions:
-    #     directions = dir_from_ms(ms)
-
-    mtf_list = []  # ms_list, []
+    mtf_list = []
     for i in range(int(len(directions) / 2)):
         mtf_list.append(mtf)
-        # ms_list.append(ms)
 
     directions_paired = list(zip(directions[::2], directions[1::2]))
-    # multiprocessing = list(zip(mtf_list, ms_list, directions_paired))
     multiprocessing = list(zip(mtf_list, directions_paired))
     pool = Pool(cores)  # specify cores
     new_h5parms = pool.map(dir2phasesol_multiprocessing, multiprocessing)
@@ -556,15 +556,21 @@ def interpolate_time(the_array, the_times, new_times, tec=False):
     """Given a h5parm array, it will interpolate the values in the time axis
     from whatever it is to a given value.
 
-    Args:
-    the_array (NumPy array): The array of values or weights from the h5parm.
-    the_times (NumPy array): The 1D array of values along the time axis.
-    new_times (NumPy array): The 1D time axis that the values will be mapped
-        to.
+    Parameters
+    ----------
+    the_array : NumPy array
+        The array of values or weights from the h5parm.
+    the_times : NumPy array
+        The 1D array of values along the time axis.
+    new_times : NumPy array
+        The 1D time axis that the values will be mapped to.
+    tec : boolean, optional
+        Whether TEC solutions are being used. The default is False.
 
-    Returns:
-    The array of values or weights for a h5parm expanded to fit the new time
-    axis. (NumPy array)
+    Returns
+    -------
+    NumPy array
+        The values or weights for a h5parm expanded to fit the new time axis.
     """
 
     if tec:
@@ -578,7 +584,8 @@ def interpolate_time(the_array, the_times, new_times, tec=False):
             old_values = the_array[:, 0, a, 0]  # xx
 
             # calculate the interpolated values
-            f = interp1d(the_times, old_values, kind='nearest', bounds_error=False)
+            f = interp1d(the_times, old_values, kind='nearest',
+                         bounds_error=False)
 
             new_values = f(new_times)
 
@@ -587,18 +594,21 @@ def interpolate_time(the_array, the_times, new_times, tec=False):
 
     else:
         # get the original data
-        time, freq, ant, pol, dir_ = the_array.shape  # axes were reordered earlier
+        time, freq, ant, pol, dir_ = the_array.shape  # axes reordered earlier
 
         # make the new array
-        interpolated_array = np.ones(shape=(len(new_times), freq, ant, pol, dir_))
+        interpolated_array = np.ones(shape=(len(new_times), freq, ant, pol,
+                                            dir_))
 
         for a in range(ant):  # for one antenna only
             old_x_values = the_array[:, 0, a, 0, 0]  # xx
             old_y_values = the_array[:, 0, a, 1, 0]  # yy
 
             # calculate the interpolated values
-            x1 = interp1d(the_times, old_x_values, kind='nearest', bounds_error=False)
-            y1 = interp1d(the_times, old_y_values, kind='nearest', bounds_error=False)
+            x1 = interp1d(the_times, old_x_values, kind='nearest',
+                          bounds_error=False)
+            y1 = interp1d(the_times, old_y_values, kind='nearest',
+                          bounds_error=False)
 
             new_x_values = x1(new_times)
             new_y_values = y1(new_times)
@@ -613,17 +623,19 @@ def interpolate_time(the_array, the_times, new_times, tec=False):
 def dir2phasesol_multiprocessing(args):
     """Wrapper to parallelise make_h5parm.
 
-    Args:
-    args (list or tuple): Parameters to be passed to the dir2phasesol
-        function.
+    Parameters
+    ----------
+    args : list or tuple
+        Parameters to be passed to the dir2phasesol function.
 
-    Returns:
-    The output of the dir2phasesol function, which is the name of a new
-        h5parm file. (str)
+    Returns
+    -------
+    string
+        The output of the dir2phasesol function, which is the name of a new
+        h5parm file.
     """
 
     mtf, directions = args
-    # return dir2phasesol(mtf=mtf, ms=ms, directions=directions)
     return dir2phasesol(mtf=mtf, directions=directions)
 
 
@@ -671,12 +683,14 @@ def build_soltab(soltab, working_data, solset):
         tab = lo.getSolset(solset).getSoltab(soltab + '000')
         time_mins.append(np.min(tab.time[:]))
         time_maxs.append(np.max(tab.time[:]))
-        time_intervals.append((np.max(tab.time[:]) - np.min(tab.time[:])) / (len(tab.time[:]) - 1))
+        time_intervals.append((np.max(tab.time[:]) - np.min(tab.time[:])) /
+                              (len(tab.time[:]) - 1))
         frequencies.append(tab.freq[:])
         lo.close()
 
     # the time ranges from the lowest to the highest on the smallest interval
-    num_of_steps = 1 + ((np.max(time_maxs) - np.min(time_mins)) / np.min(time_intervals))
+    num_of_steps = 1 + ((np.max(time_maxs) - np.min(time_mins)) /
+                        np.min(time_intervals))
     new_time = np.linspace(np.min(time_mins), np.max(time_maxs), num_of_steps)
 
     # looping through the h5parms to get the solutions for the good stations
@@ -696,8 +710,10 @@ def build_soltab(soltab, working_data, solset):
             weights = np.expand_dims(tab.weight, 0)
 
         if soltab == 'tec':  # tec will not have a polarisation axis
-            reordered_values = reorderAxes(values, axes_names, ['time', 'freq', 'ant', 'dir'])
-            reordered_weights = reorderAxes(weights, axes_names, ['time', 'freq', 'ant', 'dir'])
+            reordered_values = reorderAxes(values, axes_names,
+                                           ['time', 'freq', 'ant', 'dir'])
+            reordered_weights = reorderAxes(weights, axes_names,
+                                            ['time', 'freq', 'ant', 'dir'])
 
             for s in range(len(tab.ant[:])):  # stations
                 if tab.ant[s] == my_station.strip():
@@ -705,24 +721,38 @@ def build_soltab(soltab, working_data, solset):
                     w = reordered_weights[:, :, s, :]
                     v_expanded = np.expand_dims(v, axis=2)
                     w_expanded = np.expand_dims(w, axis=2)
-                    v_interpolated = interpolate_time(the_array=v_expanded, the_times=tab.time[:], new_times=new_time, tec=True)
-                    w_interpolated = interpolate_time(the_array=w_expanded, the_times=tab.time[:], new_times=new_time, tec=True)
+                    v_interpolated = interpolate_time(the_array=v_expanded,
+                                                      the_times=tab.time[:],
+                                                      new_times=new_time,
+                                                      tec=True)
+                    w_interpolated = interpolate_time(the_array=w_expanded,
+                                                      the_times=tab.time[:],
+                                                      new_times=new_time,
+                                                      tec=True)
                     val.append(v_interpolated)
                     weight.append(w_interpolated)
             lo.close()
 
         else:
-            reordered_values = reorderAxes(values, axes_names, ['time', 'freq', 'ant', 'pol', 'dir'])
-            reordered_weights = reorderAxes(weights, axes_names, ['time', 'freq', 'ant', 'pol', 'dir'])
+            reordered_values = reorderAxes(values, axes_names,
+                                           ['time', 'freq', 'ant', 'pol',
+                                            'dir'])
+            reordered_weights = reorderAxes(weights, axes_names,
+                                            ['time', 'freq', 'ant', 'pol',
+                                             'dir'])
 
             for s in range(len(tab.ant[:])):  # stations
                 if tab.ant[s] == my_station.strip():
-                    v = reordered_values[:, :, s, :, :]  # time, freq, ant, pol, dir
+                    v = reordered_values[:, :, s, :, :]  # tme,frq,ant,pol,dir
                     w = reordered_weights[:, :, s, :, :]
                     v_expanded = np.expand_dims(v, axis=2)
                     w_expanded = np.expand_dims(w, axis=2)
-                    v_interpolated = interpolate_time(the_array=v_expanded, the_times=tab.time[:], new_times=new_time)
-                    w_interpolated = interpolate_time(the_array=w_expanded, the_times=tab.time[:], new_times=new_time)
+                    v_interpolated = interpolate_time(the_array=v_expanded,
+                                                      the_times=tab.time[:],
+                                                      new_times=new_time)
+                    w_interpolated = interpolate_time(the_array=w_expanded,
+                                                      the_times=tab.time[:],
+                                                      new_times=new_time)
                     val.append(v_interpolated)
                     weight.append(w_interpolated)
             lo.close()
@@ -740,24 +770,31 @@ def build_soltab(soltab, working_data, solset):
     return vals, weights, new_time, my_freqs
 
 
-def dir2phasesol(mtf, directions=[]):  # , ms=''
-    '''Get the directions of the h5parms from the master text file. Calculate
+def dir2phasesol(mtf, directions=[]):
+    """Make a h5parm in a new direction.
+
+    Get the directions of the h5parms from the master text file. Calculate
     the separation between a list of given directions and the h5parm
     directions. For each station, find the h5parm of smallest separation which
     has valid phase solutions. Create a new h5parm. Write these phase solutions
     to this new h5parm.
 
-    Args:
-    mtf (str): Master text file with list of h5parms.
-    ms (str; default=''): Measurement set to be self-calibrated, used for
-        getting a sensible name for the new HDF5.
-    directions (list; default=[]): Right ascension and declination of one
-        source in radians.
+    Parameters
+    ----------
+    mtf : string
+        Master text file with list of h5parms.
+    ms : string, optional
+        Measurement set to be self-calibrated, used for getting a sensible name
+        for the new HDF5. The default is ``.
+    directions : list, optional
+        Right ascension and declination of one source in radians. The default
+        is [].
 
-    Returns:
-    The new h5parm to be applied to the measurement set. (str)
-    '''
-
+    Returns
+    -------
+    string
+        The new h5parm to be applied to the measurement set.
+    """
     # get the direction from the master text file
     # HACK genfromtxt gives empty string for h5parms when names=True is used
     # importing them separately as a work around
@@ -810,9 +847,10 @@ def dir2phasesol(mtf, directions=[]):  # , ms=''
             # when the master text file only has one h5parm in it
             try:
                 row = list(h5parms).index(h5parm)  # row in mtf
-                value = data[mtf_station][row]  # boolean for h5parm and station
+                value = data[mtf_station][row]  # boolean for h5parm + station
 
-            except:
+            except (ZeroDivisionError, ValueError, KeyError, IndexError,
+                    TypeError):  # cannot remember exact error raised
                 row = 0
                 value = data[mtf_station]
 
@@ -1148,7 +1186,7 @@ def dir2phasesol(mtf, directions=[]):  # , ms=''
         amp_antenna = amp_solset.obj._f_get_child('antenna')
         amp_antenna.append(antenna_soltab.items())  # from dictionary to list
 
-    except:
+    except (ZeroDivisionError, ValueError, KeyError, IndexError, TypeError):
         print('No amplitude solutions found.')
         pass
 
@@ -2399,7 +2437,7 @@ def plot_h5(h5parm, ncpu=4, phasesol='sol000', diagsol='sol001',
     """Make losoto plots for a h5parm.
     """
     # e.g. h5parm = direction_133.305_19.515_final-ddf.h5
-    parset = h5parm.replace('final-ddf.h5', 'losoto.parset')
+    parset = h5parm.replace('final.h5', 'losoto.parset')
     print('******************************************************************')
     print('h5parm:', h5parm)
     print('parset:', parset)
@@ -2450,6 +2488,12 @@ def plot_h5(h5parm, ncpu=4, phasesol='sol000', diagsol='sol001',
     print('Created {}'.format(parset))
     print('Plotting solutions from {}'.format(h5parm))
     subprocess.check_output(['losoto', h5parm, parset])
+    # move plots to new directory, e.g. direction_133.305_19.515_pngs
+    dir_for_plots = parset.replace('.MS_losoto.parset', '_pngs')
+    os.mkdir(dir_for_plots)
+    for png_image in glob.glob('direction_*.*_*.*_*_*.png'):
+        png_base = os.path.basename(png_image)
+        os.rename(png_image, dir_for_plots + '/' + png_base)
 
 
 def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
