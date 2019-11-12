@@ -96,7 +96,7 @@ def make_ds9_region_file(dir_dict, ds9_region_file='directions.reg',
 
         # calibrators used
         if caldir == '':
-            caldir = os.path.dirname(ds9_region_file + '/loop3*.apply_tec')
+            caldir = os.path.dirname(ds9_region_file) + '/loop3*.apply_tec'
         cals = glob.glob(caldir)
         cRA, cDEC, cUNIT = [], [], []
         for cal in cals:
