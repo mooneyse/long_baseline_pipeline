@@ -1336,9 +1336,9 @@ def add_amplitude_and_phase_solutions(diag_A_1, diag_P_1, diag_A_2, diag_P_2):
 
         for i in range(diag_A_1.shape[1]):
             amplitude_1_2, phase_1_2 = [], []
-            print('----------------------------------------------------------')
-            print(diag_A_1.shape, diag_P_1.shape,
-                  diag_A_2.shape, diag_P_2.shape)
+            # print('--------------------------------------------------------')
+            # print(diag_A_1.shape, diag_P_1.shape,
+            #       diag_A_2.shape, diag_P_2.shape)
             try:
                 for A1, P1, A2, P2 in zip(diag_A_1[:, i], diag_P_1[:, i],
                                           diag_A_2[:, i], diag_P_2[:, i]):
