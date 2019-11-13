@@ -2513,7 +2513,7 @@ def plot_h5(h5parm, ncpu=4, phasesol='sol000', diagsol='sol001',
     print('Plotting solutions from {}'.format(h5parm))
     subprocess.check_output(['losoto', h5parm, parset])
     # move plots to new directory, e.g. direction_133.305_19.515_pngs
-    dir_for_plots = parset.replace('.MS_losoto.parset', '_pngs')
+    dir_for_plots = parset.replace('_losoto.parset', '_pngs')
     os.mkdir(dir_for_plots)
     for png_image in glob.glob('direction_*.*_*.*_*_*.png'):
         png_base = os.path.basename(png_image)
