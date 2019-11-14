@@ -31,8 +31,6 @@ __author__ = 'Sean Mooney'
 #      it 3 delay calibrations and 3 directions (2 of which are calibrators
 #      and one of which is empty sky)
 # TODO run loop 2 on someone else's field
-# TODO Make sure the TEC is not being converted to phase any more, nor the
-#      phases being added to the amplitudes and phases.
 # TODO put back in resiudal tec parallelisation
 
 # middle term -----------------------------------------------------------------
