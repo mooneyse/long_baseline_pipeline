@@ -26,7 +26,7 @@ import logging
 __author__ = 'Sean Mooney'
 
 # short term ------------------------------------------------------------------
-# TODO fix the big error on line 1277 and remove debugging print statements
+# TODO fix the big error on line 1480 and remove debugging print statements
 # TODO run LB-Split-Cals on the full bandwidth with loop 2 on the end, giving
 #      it 3 delay calibrations and 3 directions (2 of which are calibrators
 #      and one of which is empty sky)
@@ -1482,6 +1482,7 @@ def add_amplitude_and_phase_solutions(diag_A_1, diag_P_1, diag_A_2, diag_P_2):
                 axes and diag_A/P_2 have 1 freq axis so defining i as the range
                 for diag_A/P_1 gives i up to 6, and at i == 2 i have line 1267
                 saying diag_A_2[:,i] with i = 2, but i is 1 max! so it fails'''
+                # https://i.imgur.com/9W1lTKo.png
                 for A1, P1, A2, P2 in zip(diag_A_1[:, 0], diag_P_1[:, 0],
                                           diag_A_2[:, 0], diag_P_2[:, 0]):
                     complex_1 = A1 * complex(np.cos(P1), np.sin(P1))
