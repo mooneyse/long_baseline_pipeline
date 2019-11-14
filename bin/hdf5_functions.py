@@ -24,6 +24,13 @@ import pyrap.tables as pt
 
 __author__ = 'Sean Mooney'
 
+# TODO run LB-Split-Cals on the full bandwidth with loop 2 on the end
+# TODO source selection function of what to do next, maybe sort targets by flux
+#      and then take the x that are furthest away from each other but above
+#      a certain statistic that Judith is working on.
+# TODO put in a switch to tell loop 3 to take a point source if loop 3 fails
+#      because PyBDSF returns a RuntimeError saying that all the pixels are
+#      flagged
 # TODO ds9 region file gets ra, dec from apply_tec ms using pointing centre
 #      with taql but this gives the original pointing centre so trying it a
 #      different way with pyrap.tables
@@ -2546,6 +2553,11 @@ def plot_h5(h5parm, ncpu=4, phasesol='sol000', diagsol='sol001',
     os.mkdir(dir_for_plots)
     for png_image in glob.glob('direction_*.*_*.*_*_*.png'):
         png_base = os.path.basename(png_image)
+        if 'XX_' in png_base:
+            png_base.split('polXX_')[0] + 'XX.png'
+        elif 'YY_' in png_base:
+            png_base.split('polYY_')[0] + 'YY.png'
+        png_base = png_base.replace(', ', '_')
         os.rename(png_image, dir_for_plots + '/' + png_base)
 
 
