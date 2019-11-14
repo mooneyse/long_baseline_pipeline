@@ -31,9 +31,8 @@ __author__ = 'Sean Mooney'
 #      it 3 delay calibrations and 3 directions (2 of which are calibrators
 #      and one of which is empty sky)
 # TODO run loop 2 on someone else's field
-# TODO where we have makeSoltab, write to the history how it is created, giving
-#      the direction that the solutions for each station came from. This is in
-#      make_h5parm_{ra}_{dec}.txt already.
+# TODO Make sure the TEC is not being converted to phase any more, nor the
+#      phases being added to the amplitudes and phases.
 # TODO put back in resiudal tec parallelisation
 
 # middle term -----------------------------------------------------------------
@@ -837,7 +836,7 @@ def dir2phasesol(mtf, directions=[]):
              'ra': directions.ra.deg,
              'dec': directions.dec.deg}
 
-    working_file = '{prefix}/make_h5parm_{ra}_{dec}.txt'.format(**parts)
+    working_file = '{prefix}/direction_{ra:.3f}_{dec:.3f}.txt'.format(**parts)
     f = open(working_file, 'w')
     successful_stations = []
 
@@ -1214,7 +1213,7 @@ def dir2phasesol(mtf, directions=[]):
     tec_antenna.append(antenna_soltab.items())  # from dictionary to list
 
     h.close()  # close the new h5parm
-    os.remove(working_file)
+    # os.remove(working_file)
     return new_h5parm
 
 
@@ -1478,11 +1477,11 @@ def add_amplitude_and_phase_solutions(diag_A_1, diag_P_1, diag_A_2, diag_P_2):
                                                 complex_1_2.real))
             except IndexError:
                 logging.info('This is a hack! Fix it ASAP, it is wrong')  # NB
-                '''This gets an index error because the diag_A/P_1 have 6 freq
-                axes and diag_A/P_2 have 1 freq axis so defining i as the range
-                for diag_A/P_1 gives i up to 6, and at i == 2 i have line 1267
-                saying diag_A_2[:,i] with i = 2, but i is 1 max! so it fails'''
-                # https://i.imgur.com/9W1lTKo.png
+                # This gets an index error because the diag_A/P_1 have 6 freq
+                # axes and diag_A/P_2 have 1 freq axis so defining i as the
+                # range for diag_A/P_1 gives i up to 6, and at i == 2 i have
+                # line 1267 saying diag_A_2[:,i] with i = 2, but i is 1 max! so
+                # it fails. See https://i.imgur.com/9W1lTKo.png
                 for A1, P1, A2, P2 in zip(diag_A_1[:, 0], diag_P_1[:, 0],
                                           diag_A_2[:, 0], diag_P_2[:, 0]):
                     complex_1 = A1 * complex(np.cos(P1), np.sin(P1))
@@ -1894,7 +1893,6 @@ def rejig_solsets(h5parm, is_tec=True, add_tec_to_phase=False):
         phase_weight_sum = empty_phase_weight
 
         # NOTE so much repeated code here...
-
         # write new tec + phase solutions to the solution set
         phase_sum = sol000.makeSoltab('newphase',
                                       axesNames=['time', 'freq', 'ant', 'pol',
@@ -2463,9 +2461,11 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
     # and tec000
     logging.info('Plotting solutions with LoSoTo, is that alright with you?')
     plot_h5(h5parm=combined_h5parm, ncpu=cores)
-    logging.info('Making final HDF5 file.')
-    rejigged_h5parm = rejig_solsets(h5parm=combined_h5parm,
-                                    is_tec=tec_included, add_tec_to_phase=True)
+    # logging.info('Making final HDF5 file.')
+    # rejigged_h5parm = rejig_solsets(h5parm=combined_h5parm,
+    #                                 is_tec=tec_included,
+    #                                 add_tec_to_phase=True)
+    rejigged_h5parm = combined_h5parm
 
     # evaluate the solutions and update the master file
     evaluate_solutions(h5parm=rejigged_h5parm, mtf=mtf, threshold=threshold)
@@ -2498,13 +2498,12 @@ def plot_h5(h5parm, ncpu=4, phasesol='sol000', diagsol='sol001',
     NoneType
         Nothing is returned.
     """
-    # e.g. h5parm = direction_133.305_19.515_final-ddf.h5
+    # e.g. h5parm = direction_133.305_19.515_final.h5
     parset = h5parm.replace('final.h5', 'losoto.parset')
-    # print('****************************************************************')
+    # e.g. parset = direction_133.305_19.515.MS_losoto.parset
     # print('h5parm:', h5parm)
     # print('parset:', parset)
-    # e.g. parset = direction_133.305_19.515.MS_losoto.parset
-    prefix = h5parm.replace('final-ddf.h5', '')
+    prefix = h5parm.replace('final.h5', '')
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     with open(parset, 'w') as f:  # create the parset
         f.write('# created by plot_h5 in loop 2 at {}\n\n'.format(now))
@@ -2561,6 +2560,37 @@ def plot_h5(h5parm, ncpu=4, phasesol='sol000', diagsol='sol001',
             png_base.split('polYY_')[0] + 'YY.png'
         png_base = png_base.replace(', ', '_')
         os.rename(png_image, dir_for_plots + '/' + png_base)
+    add_history_to_h5parm(h5_file=h5parm)
+
+
+def add_history_to_h5parm(h5_file, working_file=''):
+    """Add to the phase solution table the origin of the initial phase
+    solutions for any given direction.
+
+    Parameters
+    ----------
+    h5_file : string
+        Name of the h5parm.
+    working_file : string, optional
+        Name of the working file containing the information to be written to
+        the phase solution table history. The file should contain the origin
+        of the solutions for each antenna. The default is ``, which means the
+        function will look for the file in the directory of the h5_file.
+
+    Returns
+    -------
+    NoneType
+        Nothing is returned.
+    """
+    h5 = lh5.h5parm(h5_file, readonly=False)
+    sol000 = h5.getSoltset('sol000')
+    soltab = sol000.getSoltab('phase000')
+    working_file = h5_file.replace('final.h5', '.txt')
+    with open(working_file, 'r') as f:
+        data = f.read()
+    print('Writing history to sol000/phase000 in {}'.format(h5_file))
+    soltab.addHistory(data)
+    h5.close()
 
 
 def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
