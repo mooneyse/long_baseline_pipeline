@@ -24,36 +24,25 @@ import pyrap.tables as pt
 
 __author__ = 'Sean Mooney'
 
+# short term ------------------------------------------------------------------
+# TODO fix the big error on line 1277 and remove debugging print statements
 # TODO run LB-Split-Cals on the full bandwidth with loop 2 on the end
-# TODO source selection function of what to do next, maybe sort targets by flux
-#      and then take the x that are furthest away from each other but above
-#      a certain statistic that Judith is working on.
-# TODO put in a switch to tell loop 3 to take a point source if loop 3 fails
-#      because PyBDSF returns a RuntimeError saying that all the pixels are
-#      flagged
-# TODO ds9 region file gets ra, dec from apply_tec ms using pointing centre
-#      with taql but this gives the original pointing centre so trying it a
-#      different way with pyrap.tables
 # TODO run loop 2 on someone else's field
-# TODO python 3 compatibility?
-# TODO switch to interpolating LoSoTo solutions with NaN
-# TODO refactor code
-# TODO from __future__ import division?
-# TODO tidy docstrings (numpydoc docstring format; e.g. see residual_tec_solve)
 # TODO use logging module instead of print
-# TODO only uses default loop 3 parameters
-# TODO put back in resiudal tec parallelisation
-# TODO add a function to output a ds9 region file marking the directions
-# TODO plot the h5parms with losoto
-# TODO benchmark loop 2 and improve increase the performance
 # TODO where we have makeSoltab, write to the history how it is created, giving
 #      the direction that the solutions for each station came from. This is in
 #      make_h5parm_{ra}_{dec}.txt already.
-# TODO Some time axes come out with 1029 timesteps after interpolation and when
-#      matched this other time axes. Is this correct? It looks suspiciously
-#      like one was added by mistake but it might be to do with the fact that
-#      not all time axes in solution tables are the same. Check it out.
-# TODO fix the big error on line 1277 and remove debugging print statements
+# TODO put back in resiudal tec parallelisation
+
+# middle term -----------------------------------------------------------------
+# TODO switch to interpolating LoSoTo solutions with NaN
+# TODO only uses default loop 3 parameters
+# TODO put in a switch to tell loop 3 to take a point source if loop 3 fails
+#      because PyBDSF returns a RuntimeError saying that all the pixels are
+#      flagged
+# TODO source selection function of what to do next, maybe sort targets by flux
+#      and then take the x that are furthest away from each other but above
+#      a certain statistic that Judith is working on.
 # TODO ensure all hdf5s use the same reference station! It is critical that all
 #      HDF5s use the same reference station. Otherwise, taking solutions for
 #      different stations from different HDF5s would be incorrect. So a check
@@ -62,11 +51,20 @@ __author__ = 'Sean Mooney'
 #      write a function which converts the solutions from one reference station
 #      to another, and do this if necessary. (First, make sure the new station
 #      we are using as the reference is present in all HDF5s.)
+
+# long term -------------------------------------------------------------------
+# TODO python 3 compatibility?
+# TODO from __future__ import division?
 # TODO Do we use WEIGHT_SPECTRUM or WEIGHT? And does it make sense to include
 #      this while adding things (not averaging)? e.g. When combining weights,
 #      should I take their intersection or average? When adding data, what role
 #      should the weights play?
-# TODO remove residual TEC step, but first figure out why it is bad
+# TODO refactor code
+# TODO benchmark loop 2 and improve increase the performance
+# TODO Some time axes come out with 1029 timesteps after interpolation and when
+#      matched this other time axes. Is this correct? It looks suspiciously
+#      like one was added by mistake but it might be to do with the fact that
+#      not all time axes in solution tables are the same. Check it out.
 
 
 def make_ds9_region_file(dir_dict, ds9_region_file='directions.reg',
@@ -2498,9 +2496,9 @@ def plot_h5(h5parm, ncpu=4, phasesol='sol000', diagsol='sol001',
     """
     # e.g. h5parm = direction_133.305_19.515_final-ddf.h5
     parset = h5parm.replace('final.h5', 'losoto.parset')
-    print('******************************************************************')
-    print('h5parm:', h5parm)
-    print('parset:', parset)
+    # print('****************************************************************')
+    # print('h5parm:', h5parm)
+    # print('parset:', parset)
     # e.g. parset = direction_133.305_19.515.MS_losoto.parset
     prefix = h5parm.replace('final-ddf.h5', '')
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
