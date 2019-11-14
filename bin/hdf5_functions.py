@@ -21,14 +21,16 @@ from scipy.interpolate import interp1d
 from losoto.lib_operations import reorderAxes
 import losoto.h5parm as lh5  # on CEP3, "module load losoto"
 import pyrap.tables as pt
+import logging
 
 __author__ = 'Sean Mooney'
 
 # short term ------------------------------------------------------------------
 # TODO fix the big error on line 1277 and remove debugging print statements
-# TODO run LB-Split-Cals on the full bandwidth with loop 2 on the end
+# TODO run LB-Split-Cals on the full bandwidth with loop 2 on the end, giving
+#      it 3 delay calibrations and 3 directions (2 of which are calibrators
+#      and one of which is empty sky)
 # TODO run loop 2 on someone else's field
-# TODO use logging module instead of print
 # TODO where we have makeSoltab, write to the history how it is created, giving
 #      the direction that the solutions for each station came from. This is in
 #      make_h5parm_{ra}_{dec}.txt already.
@@ -97,8 +99,8 @@ def make_ds9_region_file(dir_dict, ds9_region_file='directions.reg',
                          ' select=1 highlite=1 dash=0 fixed=0 edit=1 move=1 '
                          'include=1 source=1\nfk5\n\n')
 
-        print('Creating the ds9 region file called {} for the '
-              'calibrators'.format(ds9_region_file))
+        logging.info('Creating the ds9 region file called {} for the '
+                     'calibrators'.format(ds9_region_file))
         with open(ds9_region_file, 'w+') as the_file:
             the_file.write(region_header)
 
@@ -170,7 +172,7 @@ def dir_from_ms(ms, verbose=False):
     # np.squeeze(tb.table(ms + '::POINTING')[0]['DIRECTION'].tolist())
 
     if verbose:
-        print('Getting direction from {}.'.format(ms))
+        logging.info('Getting direction from {}.'.format(ms))
     t = pt.table(ms, readonly=True, ack=False)
     field = pt.table(t.getkeyword('FIELD'), readonly=True, ack=False)
     directions = field.getcell('PHASE_DIR', 0)[0].tolist()  # radians
@@ -235,7 +237,7 @@ def combine_h5s(phase_h5='', amplitude_h5='', tec_h5='', loop3_dir=''):
         phase_h5s.sort()
         amplitude_h5 = amplitude_h5s[-1]
         phase_h5 = phase_h5s[-1]
-        print('Using {} and {}.'.format(phase_h5, amplitude_h5))
+        logging.info('Using {} and {}.'.format(phase_h5, amplitude_h5))
 
     # get data from the h5parms
     p = lh5.h5parm(phase_h5)
@@ -339,7 +341,7 @@ def combine_h5s(phase_h5='', amplitude_h5='', tec_h5='', loop3_dir=''):
     p.close()
     a.close()
     n.close()
-    print('Created', new_h5)
+    logging.info('Created', new_h5)
     return new_h5
 
 
@@ -377,11 +379,11 @@ def make_blank_mtf(mtf):
                   'CS301HBA0, CS301HBA1, CS302HBA0, CS302HBA1, '
                   'CS401HBA0, CS401HBA1, CS501HBA0, CS501HBA1\n')
     if not os.path.isfile(mtf):  # if it does not already exist
-        print('Creating the master text file {}'.format(mtf))
+        logging.info('Creating the master text file {}'.format(mtf))
         with open(mtf, 'w+') as the_file:
             the_file.write(mtf_header)
     else:
-        print('%s exists so it will not be created or overwritten' % mtf)
+        logging.info('%s exists so it is not created or overwritten' % mtf)
     return mtf
 
 
@@ -464,7 +466,7 @@ def evaluate_solutions(h5parm, mtf, threshold=0.25, verbose=False):
     dictionary
         The coherence metric for each station.
     """
-    print('Evaluating phase solutions in', h5parm)
+    logging.info('Evaluating phase solutions in', h5parm)
     h = lh5.h5parm(h5parm)
     solname = h.getSolsetNames()[0]  # set to -1 to use only the last solset
     solset = h.getSolset(solname)
@@ -491,15 +493,16 @@ def evaluate_solutions(h5parm, mtf, threshold=0.25, verbose=False):
 
             coh = np.mean(cohs)
             if verbose:
-                print('{} {} coherence: {:.3f} ({} frequency'
-                      ' axes)'.format(h5parm, station, coh, num_freqs))
+                logging.info('{} {} coherence: {:.3f} ({} frequency'
+                             ' axes)'.format(h5parm, station, coh, num_freqs))
             evaluations[station] = coh  # 0 = best
 
         except (ValueError, KeyError, IndexError, TypeError):
             # if there is one frequency axis only
             coh = coherence_metric(xx, yy)
             if verbose:
-                print('{} {} coherence: {:.3f}'.format(h5parm, station, coh))
+                logging.info('{} {} coherence: {:.3f}'.format(h5parm, station,
+                                                              coh))
             evaluations[station] = coh  # 0 = best
 
     with open(mtf) as f:
@@ -964,7 +967,7 @@ def dir2phasesol(mtf, directions=[]):
     weights = np.concatenate(weight, axis=2)
 
     # write these best phase solutions to the new h5parm
-    print('Putting phase soltuions in sol000 in {}.'.format(new_h5parm))
+    logging.info('Putting phase soltuions in sol000 in {}.'.format(new_h5parm))
     solset.makeSoltab('phase',
                       axesNames=['time', 'freq', 'ant', 'pol', 'dir'],
                       axesVals=[new_time, freq, ant, pol, dir_],
@@ -1162,7 +1165,7 @@ def dir2phasesol(mtf, directions=[]):
                                                  working_data=working_data,
                                                  solset='sol001')
         q = new_h5parm
-        print('Putting amplitude soltuions in sol001 in {}.'.format(q))
+        logging.info('Putting amplitude soltuions in sol001 in {}.'.format(q))
         amp_solset = h.makeSolset('sol001')
         amp_solset.makeSoltab('amplitude',
                               axesNames=['time', 'freq', 'ant', 'pol', 'dir'],
@@ -1189,14 +1192,14 @@ def dir2phasesol(mtf, directions=[]):
         amp_antenna.append(antenna_soltab.items())  # from dictionary to list
 
     except (ZeroDivisionError, ValueError, KeyError, IndexError, TypeError):
-        print('No amplitude solutions found.')
+        logging.info('No amplitude solutions found.')
         pass
 
     # try:  # bring across tec solutions if there are any
     vals, weights, time, freq = build_soltab(soltab='tec',
                                              working_data=working_data,
                                              solset='sol002')
-    print('Putting TEC soltuions in sol002 in {}.'.format(new_h5parm))
+    logging.info('Putting TEC soltuions in sol002 in {}.'.format(new_h5parm))
     tec_solset = h.makeSolset('sol002')
     tec_solset.makeSoltab('tec',
                           axesNames=['time', 'freq', 'ant', 'dir'],
@@ -1257,7 +1260,7 @@ def residual_tec_solve(ms, column_out='DATA', solint=5, tidyup=False,
     if sourcedb == '':
         sourcedb = ms + '_A_final-image.sky'
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    print('Solving for residual TEC on {}'.format(ms))
+    logging.info('Solving for residual TEC on {}'.format(ms))
     with open(parset, 'w') as f:  # create the parset
         f.write('# created by residual_tec_solve at {}\n\n'.format(now))
         f.write('msin                       = {}\n'.format(ms))
@@ -1273,11 +1276,11 @@ def residual_tec_solve(ms, column_out='DATA', solint=5, tidyup=False,
         f.write('residual_tec.sourcedb      = {}\n'.format(sourcedb))
     if runnow:
         subprocess.check_output(['NDPPP', parset])
-        print('Going to return this', msout)
+        logging.info('Going to return this', msout)
         return msout, parset
     if tidyup:
         os.remove(parset)
-    print('MS out is:', msout, 'and parset is', parset, 'all ok?')
+    logging.info('MS out is:', msout, 'and parset is', parset, 'all ok?')
     return msout, parset
 
 
@@ -1344,26 +1347,26 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False,
         f.write('msout.datacolumn                    = {}\n\n'.format(col_out))
 
         if 'amplitude' in solutions and 'tec' in solutions:
-            print('Applying phase, amplitude, and TEC solutions in'
-                  ' %s to %s' % (h5parm, ms))
+            logging.info('Applying phase, amplitude, and TEC solutions in'
+                         ' %s to %s' % (h5parm, ms))
             f.write('steps                               = [phaseshift, '
                     'average, stationadder, filter, apply_phase, '
                     'apply_diagonal, apply_tec]\n\n')
         elif 'amplitude' not in solutions and 'tec' in solutions:
-            print('Applying phase and TEC solutions in'
-                  ' %s to %s' % (h5parm, ms))
+            logging.info('Applying phase and TEC solutions in'
+                         ' %s to %s' % (h5parm, ms))
             f.write('steps                               = [phaseshift, '
                     'average, stationadder, filter, apply_phase, '
                     'apply_tec]\n\n')
         elif 'amplitude' in solutions and 'tec' not in solutions:
-            print('Applying phase and amplitude solutions in'
-                  ' %s to %s' % (h5parm, ms))
+            logging.info('Applying phase and amplitude solutions in'
+                         ' %s to %s' % (h5parm, ms))
             f.write('steps                               = [phaseshift, '
                     'average, stationadder, filter, apply_phase, '
                     'apply_diagonal]\n\n')
         else:
-            print('Applying phase solutions in'
-                  ' %s to %s' % (h5parm, ms))
+            logging.info('Applying phase solutions in'
+                         ' %s to %s' % (h5parm, ms))
             f.write('steps                               = [phaseshift, '
                     'average, stationadder, filter, apply_phase]\n\n')
 
@@ -1406,7 +1409,7 @@ def apply_h5parm(h5parm, ms, col_out='DATA', solutions=['phase'], tidy=False,
     else:
         return msout, parset
     if tidy:
-        print('Deleting the parset.')
+        logging.info('Deleting the parset.')
         os.remove(parset)
 
     return msout
@@ -1474,7 +1477,7 @@ def add_amplitude_and_phase_solutions(diag_A_1, diag_P_1, diag_A_2, diag_P_2):
                     phase_1_2.append(np.arctan2(complex_1_2.imag,
                                                 complex_1_2.real))
             except IndexError:
-                print('This is a hack! Fix it ASAP, it is wrong')  # NB
+                logging.info('This is a hack! Fix it ASAP, it is wrong')  # NB
                 '''This gets an index error because the diag_A/P_1 have 6 freq
                 axes and diag_A/P_2 have 1 freq axis so defining i as the range
                 for diag_A/P_1 gives i up to 6, and at i == 2 i have line 1267
@@ -1902,12 +1905,12 @@ def rejig_solsets(h5parm, is_tec=True, add_tec_to_phase=False):
                                       weights=phase_weight_sum)
 
         # now remove phase000 and tec000 and rename phase001 to phase000
-        print('Converted TEC to phase and added it to phase.')
+        logging.info('Converted TEC to phase and added it to phase.')
         tec.delete()
         phase.delete()
         phase_sum.rename('phase000')
-        print('Removed the TEC and phase soltabs and replaced phase000 with'
-              ' the new solutions.')
+        logging.info('Removed the TEC and phase soltabs and replaced phase000'
+                     ' with the new solutions.')
         # NOTE interpolating weights, is that a good idea? change to
         # interpolating by setting things to nan instead like in the
         # calibration paper
@@ -2457,9 +2460,9 @@ def update_list(initial_h5parm, incremental_h5parm, mtf, threshold=0.25,
     # and sol002 has tec solutions (tec000) - however, we want to change this
     # to produce one hdf5 with 1 solset, which has phase000, amplitude000,
     # and tec000
-    print('Plotting solutions with LoSoTo, is that alright with you?')
+    logging.info('Plotting solutions with LoSoTo, is that alright with you?')
     plot_h5(h5parm=combined_h5parm, ncpu=cores)
-    print('Making final HDF5 file.')
+    logging.info('Making final HDF5 file.')
     rejigged_h5parm = rejig_solsets(h5parm=combined_h5parm,
                                     is_tec=tec_included, add_tec_to_phase=True)
 
@@ -2543,8 +2546,8 @@ def plot_h5(h5parm, ncpu=4, phasesol='sol000', diagsol='sol001',
         f.write('operation   = PLOT\n')
         f.write('refAnt      = ST001\n')
 
-    print('Created {}'.format(parset))
-    print('Plotting solutions from {}'.format(h5parm))
+    logging.info('Created {}'.format(parset))
+    logging.info('Plotting solutions from {}'.format(h5parm))
     subprocess.check_output(['losoto', h5parm, parset])
     # move plots to new directory, e.g. direction_133.305_19.515_pngs
     dir_for_plots = parset.replace('_losoto.parset', '_pngs')
@@ -2676,7 +2679,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     for ms in ms_list:
         if ms.split('/')[-1][:5] != 'loop3':
             sources.append(ms.split('/')[-1][:-19])
-    print('Found', len(ms_list), 'sources:', ', '.join(sources))
+    logging.info('Found', len(ms_list), 'sources:', ', '.join(sources))
 
     # for each calibrator source group the, phase, diagonal, and tec solutions
     # in one h5parm, and evaluate the goodness of the phase solutions
@@ -2685,11 +2688,11 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
         amplitude_h5 = glob.glob(ms.replace(suffix, '.apply_tec_A_*_c0.h5'))[0]
         tec_h5 = ms.replace(suffix, '.MS_tec.h5')
 
-        print('Source {}/{}:'.format(i + 1, len(ms_list)), source)
-        print(source, 'MS:', ms)
-        print(source, 'phase h5parm:', phase_h5)
-        print(source, 'amplitude h5parm:', amplitude_h5)
-        print(source, 'TEC h5parm:', tec_h5, '\n')
+        logging.info('Source {}/{}:'.format(i + 1, len(ms_list)), source)
+        logging.info(source, 'MS:', ms)
+        logging.info(source, 'phase h5parm:', phase_h5)
+        logging.info(source, 'amplitude h5parm:', amplitude_h5)
+        logging.info(source, 'TEC h5parm:', tec_h5, '\n')
 
         combined_h5 = combine_h5s(phase_h5=phase_h5,
                                   amplitude_h5=amplitude_h5,
@@ -2702,10 +2705,10 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
                                        directions=directions,
                                        cores=cores)
 
-    print('Built {} h5parms:'.format(len(new_h5parms)))
+    logging.info('Built {} h5parms:'.format(len(new_h5parms)))
     for new_h5parm in new_h5parms:
         coords_str = ', '.join(new_h5parm.split('/')[-1][:-3].split('_')[-2:])
-        print('Direction {}: {}'.format(coords_str, new_h5parm))
+        logging.info('Direction {}: {}'.format(coords_str, new_h5parm))
 
     # output a measurement set per direction that is shifted and averaged; do
     # not execute the parset with ndppp when running apply_h5parm, just get the
@@ -2722,8 +2725,8 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
                                      solutions=['phase', 'amplitude', 'tec'])
         parsets.append(parset)
         msouts.append(msout)
-    print('Running NDPPP in {} directions on {} CPUs in'
-          'parallel'.format(len(parsets), cores))
+    logging.info('Running NDPPP in {} directions on {} CPUs in'
+                 'parallel'.format(len(parsets), cores))
     processes = set()
     for name in parsets:
         processes.add(subprocess.Popen(['NDPPP', name]))
@@ -2735,14 +2738,14 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
         if p.poll() is None:
             p.wait()
 
-    print('Made {} new measurement sets:'.format(len(msouts)))
+    logging.info('Made {} new measurement sets:'.format(len(msouts)))
     for i, msout in enumerate(msouts):
-        print('{}/{}: {}'.format(i + 1, len(msouts), msout))
+        logging.info('{}/{}: {}'.format(i + 1, len(msouts), msout))
 
     # for each of measurement sets that were made, run loop 3 on them in
     # parallel
-    print('Running loop 3 in {} directions on {} CPUs in '
-          'parallel'.format(len(parsets), cores))
+    logging.info('Running loop 3 in {} directions on {} CPUs in '
+                 'parallel'.format(len(parsets), cores))
     processes = set()
     for name in msouts:
         processes.add(subprocess.Popen([loop3_script, name]))
@@ -2762,16 +2765,16 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
         if os.path.exists(ms):
             # msout_tec, parset_tec = residual_tec_solve(ms=ms, runnow=False)
             msout_tec, parset_tec = residual_tec_solve(ms=ms, runnow=True)
-            print('Actually appending this:', msout_tec)
+            logging.info('Actually appending this:', msout_tec)
             msouts_tec.append(msout_tec)
             parsets_tec.append(parsets_tec)
         else:
-            print('Cannot find {} -  maybe loop 3 failed'.format(ms))
+            logging.info('Cannot find {} -  maybe loop 3 failed'.format(ms))
 
-    print('Full list looks like this:', msouts_tec, type(msouts_tec))
+    logging.info('Full list looks like this:', msouts_tec, type(msouts_tec))
     try:
-        print('and len if a list:', len(msouts_tec))
-        print('And parsets! dont forget them!', type(parsets), parsets)
+        logging.info('and len if a list:', len(msouts_tec))
+        logging.info('And parsets! dont forget them!', type(parsets), parsets)
     except (ValueError, KeyError, IndexError, TypeError):
         pass
     # print('Solving for residual TEC in {} directions on {} CPUs in '
@@ -2788,19 +2791,19 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     #         p.wait()
 
     # put phase, amplitude and tec solutions for each direction into one h5parm
-    print('Collecting incremental solutions for each direction')
+    logging.info('Collecting incremental solutions for each direction')
     combined_h5s = []
     for i, ms in enumerate(msouts_tec):
-        print('MS with TEC:', msouts_tec)
+        logging.info('MS with TEC:', msouts_tec)
         phase_h5 = glob.glob(ms[:-7] + '.MS_??_c0.h5')[0]
         amplitude_h5 = glob.glob(ms[:-7] + '.MS_A_??_c0.h5')[0]
         tec_h5 = ms.replace('.MS', '_00_c0.h5')
         # dg = ', '.join(ms.split('_')[1:-1])
-        print('Direction {}/{}')  # {} deg'.format(i + 1, len(msouts_tec), dg))
-        print(source, 'MS:', ms)
-        print(source, 'phase h5parm:', phase_h5)
-        print(source, 'amplitude h5parm:', amplitude_h5)
-        print(source, 'TEC h5parm:', tec_h5, '\n')
+        logging.info('Direction {}/{}')  # {}d'.format(i+1,len(msouts_tec),dg))
+        logging.info(source, 'MS:', ms)
+        logging.info(source, 'phase h5parm:', phase_h5)
+        logging.info(source, 'amplitude h5parm:', amplitude_h5)
+        logging.info(source, 'TEC h5parm:', tec_h5, '\n')
 
         combined_h5 = combine_h5s(phase_h5=phase_h5,
                                   amplitude_h5=amplitude_h5,
@@ -2810,15 +2813,15 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     # run update_list to add the incremental solutions from loop 3 to the
     # initial solutions that were used; update_list calls evaluate_solutions to
     # evaluate the goodness of these solutions
-    print('Updating the list')
-    print('msouts_tec:', msouts_tec)
-    print('combined_h5s:', combined_h5s)
+    logging.info('Updating the list')
+    logging.info('msouts_tec:', msouts_tec)
+    logging.info('combined_h5s:', combined_h5s)
     for msout, increm_h5 in zip(msouts_tec, combined_h5s):
         # crd = ', '.join(msout.split('_')[-3:-1])
         # print('Combining initial + incremental solutions for {}'.format(crd))
         # NB change msout[:-2] + 'h5' to increm_h5 + something, it should be eg
         # 'direction_133.305_19.515.h5'
-        print('starting with', msout[:-7] + '.h5', increm_h5)
+        logging.info('starting with', msout[:-7] + '.h5', increm_h5)
         update_list(initial_h5parm=msout[:-7] + '.h5',
                     incremental_h5parm=increm_h5,
                     mtf=mtf, cores=cores,
@@ -2826,7 +2829,7 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
 
         # plot_h5(h5parm=increm_h5, ncpu=cores)  # plot solutions
 
-    print('Loop 2 is done')
+    logging.info('Loop 2 is done')
 
 
 if __name__ == '__main__':
