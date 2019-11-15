@@ -338,7 +338,7 @@ def combine_h5s(phase_h5='', amplitude_h5='', tec_h5='', loop3_dir=''):
     p.close()
     a.close()
     n.close()
-    logging.info('Created', new_h5)
+    logging.info('Created {}'.format(new_h5))
     return new_h5
 
 
@@ -463,7 +463,7 @@ def evaluate_solutions(h5parm, mtf, threshold=0.25, verbose=False):
     dictionary
         The coherence metric for each station.
     """
-    logging.info('Evaluating phase solutions in', h5parm)
+    logging.info('Evaluating phase solutions in {}'.format(h5parm))
     h = lh5.h5parm(h5parm)
     solname = h.getSolsetNames()[0]  # set to -1 to use only the last solset
     solset = h.getSolset(solname)
@@ -1273,11 +1273,11 @@ def residual_tec_solve(ms, column_out='DATA', solint=5, tidyup=False,
         f.write('residual_tec.sourcedb      = {}\n'.format(sourcedb))
     if runnow:
         subprocess.check_output(['NDPPP', parset])
-        logging.info('Going to return this', msout)
+        logging.info('Going to return this: {}'.format(msout))
         return msout, parset
     if tidyup:
         os.remove(parset)
-    logging.info('MS out is:', msout, 'and parset is', parset, 'all ok?')
+    logging.info('MS out is {} and parset is {}'.format(msout, parset))
     return msout, parset
 
 
@@ -2581,7 +2581,7 @@ def add_history_to_h5parm(h5_file, working_file=''):
         Nothing is returned.
     """
     h5 = lh5.h5parm(h5_file, readonly=False)
-    sol000 = h5.getSoltset('sol000')
+    sol000 = h5.getSolset('sol000')
     soltab = sol000.getSoltab('phase000')
     working_file = h5_file.replace('final.h5', '.txt')
     with open(working_file, 'r') as f:
@@ -2708,7 +2708,8 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     for ms in ms_list:
         if ms.split('/')[-1][:5] != 'loop3':
             sources.append(ms.split('/')[-1][:-19])
-    logging.info('Found', len(ms_list), 'sources:', ', '.join(sources))
+    logging.info('Found {} sources: {}'.format(len(ms_list),
+                                               ', '.join(sources)))
 
     # for each calibrator source group the, phase, diagonal, and tec solutions
     # in one h5parm, and evaluate the goodness of the phase solutions
@@ -2718,10 +2719,10 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
         tec_h5 = ms.replace(suffix, '.MS_tec.h5')
 
         logging.info('Source {}/{}:'.format(i + 1, len(ms_list)), source)
-        logging.info(source, 'MS:', ms)
-        logging.info(source, 'phase h5parm:', phase_h5)
-        logging.info(source, 'amplitude h5parm:', amplitude_h5)
-        logging.info(source, 'TEC h5parm:', tec_h5, '\n')
+        logging.info('{} MS: {}'.format(source, ms))
+        logging.info('{} phase h5parm: {}'.format(source, phase_h5))
+        logging.info('{} amplitude h5parm: {}'.format(source, amplitude_h5))
+        logging.info('{} TEC h5parm: {}\n'.format(source, tec_h5))
 
         combined_h5 = combine_h5s(phase_h5=phase_h5,
                                   amplitude_h5=amplitude_h5,
@@ -2794,16 +2795,17 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
         if os.path.exists(ms):
             # msout_tec, parset_tec = residual_tec_solve(ms=ms, runnow=False)
             msout_tec, parset_tec = residual_tec_solve(ms=ms, runnow=True)
-            logging.info('Actually appending this:', msout_tec)
+            logging.info('Actually appending this: {}'.format(msout_tec))
             msouts_tec.append(msout_tec)
             parsets_tec.append(parsets_tec)
         else:
             logging.info('Cannot find {} -  maybe loop 3 failed'.format(ms))
 
-    logging.info('Full list looks like this:', msouts_tec, type(msouts_tec))
+    logging.info('Full list looks like this: {} {}'.format(msouts_tec,
+                                                           type(msouts_tec)))
     try:
-        logging.info('and len if a list:', len(msouts_tec))
-        logging.info('And parsets! dont forget them!', type(parsets), parsets)
+        logging.info('and len if a list: {}'.format(len(msouts_tec)))
+        # logging.info('And parsets! dont forget them!')
     except (ValueError, KeyError, IndexError, TypeError):
         pass
     # print('Solving for residual TEC in {} directions on {} CPUs in '
@@ -2823,16 +2825,16 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     logging.info('Collecting incremental solutions for each direction')
     combined_h5s = []
     for i, ms in enumerate(msouts_tec):
-        logging.info('MS with TEC:', msouts_tec)
+        logging.info('MS with TEC: {}'.format(msouts_tec))
         phase_h5 = glob.glob(ms[:-7] + '.MS_??_c0.h5')[0]
         amplitude_h5 = glob.glob(ms[:-7] + '.MS_A_??_c0.h5')[0]
         tec_h5 = ms.replace('.MS', '_00_c0.h5')
         # dg = ', '.join(ms.split('_')[1:-1])
-        logging.info('Direction {}/{}')  # {}d'.format(i+1,len(msouts_tec),dg))
-        logging.info(source, 'MS:', ms)
-        logging.info(source, 'phase h5parm:', phase_h5)
-        logging.info(source, 'amplitude h5parm:', amplitude_h5)
-        logging.info(source, 'TEC h5parm:', tec_h5, '\n')
+        logging.info('Direction {}/{}'.format(i + 1, len(msouts_tec)))  # dg
+        logging.info(' {} MS: {}'.format(source, ms))
+        logging.info('{} phase h5parm: {}'.format(source, phase_h5))
+        logging.info('{} amplitude h5parm: {}'.format(source, amplitude_h5))
+        logging.info('{} TEC h5parm: {}\n'.format(source, tec_h5))
 
         combined_h5 = combine_h5s(phase_h5=phase_h5,
                                   amplitude_h5=amplitude_h5,
@@ -2843,14 +2845,14 @@ def main(calibrators_ms, delaycal_ms='../L*_SB001_*_*_1*MHz.msdpppconcat',
     # initial solutions that were used; update_list calls evaluate_solutions to
     # evaluate the goodness of these solutions
     logging.info('Updating the list')
-    logging.info('msouts_tec:', msouts_tec)
-    logging.info('combined_h5s:', combined_h5s)
+    logging.info('msouts_tec: {}'.format(msouts_tec))
+    logging.info('combined_h5s: {}'.format(combined_h5s))
     for msout, increm_h5 in zip(msouts_tec, combined_h5s):
         # crd = ', '.join(msout.split('_')[-3:-1])
         # print('Combining initial + incremental solutions for {}'.format(crd))
         # NB change msout[:-2] + 'h5' to increm_h5 + something, it should be eg
         # 'direction_133.305_19.515.h5'
-        logging.info('starting with', msout[:-7] + '.h5', increm_h5)
+        logging.info('Starting with {}.h5, {}'.format(msout[:-7], increm_h5))
         update_list(initial_h5parm=msout[:-7] + '.h5',
                     incremental_h5parm=increm_h5,
                     mtf=mtf, cores=cores,
