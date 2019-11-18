@@ -2501,7 +2501,7 @@ def plot_h5(h5parm, ncpu=4, phasesol='sol000', diagsol='sol001',
     # e.g. parset = direction_133.305_19.515.MS_losoto.parset
     # print('h5parm:', h5parm)
     # print('parset:', parset)
-    prefix = h5parm.replace('final.h5', '')
+    prefix = h5parm.replace('_final.h5', '')
     now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     with open(parset, 'w') as f:  # create the parset
         f.write('# created by plot_h5 in loop 2 at {}\n\n'.format(now))
@@ -2557,6 +2557,8 @@ def plot_h5(h5parm, ncpu=4, phasesol='sol000', diagsol='sol001',
         elif 'YY_' in png_base:
             png_base.split('polYY_')[0] + 'YY.png'
         png_base = png_base.replace(', ', '_')
+        logging.info('Renaming {} to {}/{}'.format(png_image, dir_for_plots,
+                                                   png_base))
         os.rename(png_image, dir_for_plots + '/' + png_base)
     add_history_to_h5parm(h5_file=h5parm)
 
@@ -2583,7 +2585,7 @@ def add_history_to_h5parm(h5_file, working_file=''):
     h5 = lh5.h5parm(h5_file, readonly=False)
     sol000 = h5.getSolset('sol000')
     soltab = sol000.getSoltab('phase000')
-    working_file = h5_file.replace('final.h5', '.txt')
+    working_file = h5_file.replace('_final.h5', '.txt')
     with open(working_file, 'r') as f:
         data = f.read()
     print('Writing history to sol000/phase000 in {}'.format(h5_file))
